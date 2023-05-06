@@ -1,0 +1,68 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Binaries
+**/bin/
+**/bin-int/
+bin-int/
+bin/
+Intermediates/
+
+# Hazel files
+*.log
+
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.csproj
+
+# Directories
+Hazel/vendor/VulkanSDK
+Hazel/vendor/**/bin/
+HazelInut/assets/cache
+Hazelnut/assets/cache
+scripts/__pycache__
+
+imgui.ini
+
+Hazel-Editor/*.json
+Hazelnut/*.json
+Sandbox/*.json
+
+**/HazelProfile-Runtime.json
+**/HazelProfile-Shutdown.json
+**/HazelProfile-Startup.json
+/Hazelnut/assets/cache/
