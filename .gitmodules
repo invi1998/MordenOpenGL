@@ -1,0 +1,3 @@
+[submodule "MordenOpenGL/vendor/GLFW"]
+	path = MordenOpenGL/vendor/GLFW
+	url = https://github.com/invi1998/glfw.git
