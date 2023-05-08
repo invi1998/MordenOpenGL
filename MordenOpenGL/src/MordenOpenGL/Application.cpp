@@ -4,22 +4,39 @@
 
 #include <GLFW/glfw3.h>
 
+constexpr uint32_t SCR_WIDTH = 800;
+constexpr uint32_t SCR_HEIGHT = 600;
 
 // 窗口大小调整时的回调函数
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 // 退出按钮事件
-void processInput(GLFWwindow* window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-	{
-		glfwSetWindowShouldClose(window, true);
-	}
-}
+void processInput(GLFWwindow* window);
 
+
+// 顶点着色器
+const std::string vertexShaderSource = R"(
+#version 330 core
+
+layout (location = 0) in vec3 a_Pos;
+
+void main()
+{
+	gl_Position = vec4(a_Pos, 1.0f);
+}
+)";
+
+// 片段着色器
+const std::string fragmentShaderSource = R"(
+#version 330 core
+
+out vec4 FragColor;
+
+void main()
+{
+	FragColor = vec4(0.94f, 0.13f, 0.212f, 1.0f);
+}
+)";
 
 int main(void)
 {
@@ -59,6 +76,46 @@ int main(void)
 	// 注册窗口resize时的回调函数
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+	// 创建shader对象
+	// ---------------------------------------------------------------------
+	// 顶点着色器
+	uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+	// 编译shader
+	glShaderSource(vertexShader, 1, (const GLchar**)vertexShaderSource.c_str(), nullptr);
+	glCompileShader(vertexShader);
+
+	// 检查shader是否编译成功
+	int success;
+	char infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		return -1;
+	}
+
+	// ---------------------------------------------------------------------
+	// 片段着色器
+	uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, (const GLchar**)fragmentShaderSource.c_str(), nullptr);
+	glCompileShader(fragmentShader);
+	glGetShaderiv(fragmentShader, GL_FRAGMENT_SHADER, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		return -1;
+	}
+
+	// ----------------------------------------------------------------------
+
+	// 链接着色器
+	uint32_t shaderProgram = glCreateProgram();
+	glAttachShader()
+
+
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
 	{
@@ -77,4 +134,18 @@ int main(void)
 	glfwTerminate();
 	return 0;
 
+}
+
+// ---------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
 }
