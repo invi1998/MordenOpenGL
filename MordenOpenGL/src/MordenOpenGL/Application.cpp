@@ -15,7 +15,7 @@ void processInput(GLFWwindow* window);
 
 
 // 顶点着色器
-const std::string vertexShaderSource = R"(
+const char* vertexShaderSource = R"(
 #version 330 core
 
 layout (location = 0) in vec3 a_Pos;
@@ -27,7 +27,7 @@ void main()
 )";
 
 // 片段着色器
-const std::string fragmentShaderSource = R"(
+const char* fragmentShaderSource = R"(
 #version 330 core
 
 out vec4 FragColor;
@@ -82,7 +82,7 @@ int main(void)
 	uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
 	// 编译shader
-	glShaderSource(vertexShader, 1, (const GLchar**)vertexShaderSource.c_str(), nullptr);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
 	glCompileShader(vertexShader);
 
 	// 检查shader是否编译成功
@@ -99,7 +99,7 @@ int main(void)
 	// ---------------------------------------------------------------------
 	// 片段着色器
 	uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, (const GLchar**)fragmentShaderSource.c_str(), nullptr);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
 	glCompileShader(fragmentShader);
 	glGetShaderiv(fragmentShader, GL_FRAGMENT_SHADER, &success);
 	if (!success)
@@ -113,8 +113,69 @@ int main(void)
 
 	// 链接着色器
 	uint32_t shaderProgram = glCreateProgram();
-	glAttachShader()
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
 
+	// 检查链接结果
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		return -1;
+	}
+
+	// 删除着色器
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+
+	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
+	float vertices[] = {
+		0.5f, 0.5f, 0.0f,	// top
+		0.0f, -0.5f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f,  // bottom left
+		-0.5f,  0.5f, 0.0f   // top left
+	};
+
+	// 标记我们从0开始
+	uint32_t indices[] = {
+		0, 1, 3,  // first Triangle
+		1, 2, 3   // second Triangle
+	};
+
+	uint32_t VBO, VAO, EBO;
+
+	// 创建顶点数组对象，顶点缓冲对象，元素缓冲对象
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+
+	// 绑定顶点数据对象，然后绑定并且设置缓冲，然后配置顶点属性
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+	glEnableVertexAttribArray(0);
+
+	// 请注意，这是允许的，对glVertexAttribPointer 的调用将VBO注册为顶点属性的绑定顶点缓冲区对象，以便之后我们可以安全地取消绑定
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// 请记住：当 VAO 处于活动状态时，不要取消绑定 EBO，因为绑定的元素缓冲区对象存储在 VAO 中;保持EBO绑定。
+	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	// 之后可以取消绑定 VAO，以便其他 VAO 调用不会意外修改此 VAO，但这种情况很少发生。
+	// 修改其他 VAO 无论如何都需要调用glBindVertexArray，因此当不是直接需要时，我们通常不会取消绑定VAOs（也不是VBO）。
+
+	glBindVertexArray(0);
+
+	// 取消该注释，即可绘制线框
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -126,10 +187,26 @@ int main(void)
 		glClearColor(0.1f, 0.1f, 0.215f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		// 绘制三角形
+
+		glUseProgram(shaderProgram);
+		// 鉴于我们只有一个VAO，因此没有必要每次都绑定它，但我们会这样做以使事情更有条理。
+		glBindVertexArray(VAO);
+		// glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		// glBindVertexArray(0);	// 不需要每次都解绑
+
 		// 检查并调用事件，交换缓冲
+		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	// 可选：在资源超出用途后取消分配所有资源：
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
 	return 0;
