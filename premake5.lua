@@ -3,7 +3,7 @@ include "Dependencies.lua"
 
 workspace "MordenOpenGL"
 	architecture "x86_64"
-	startproject "OpenGL"
+	startproject "MordenOpenGL"
 
 	configurations
 	{
@@ -17,26 +17,11 @@ workspace "MordenOpenGL"
 		".editorconfig"
 	}
 
-	flags
-	{
-		"MultiProcessorCompile"
-	}
-
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-group "Dependencies"
+group "Dev"
 	include "vendor/premake"
+	include "MordenOpenGL"
 	include "MordenOpenGL/vendor/GLFW"
 	include "MordenOpenGL/vendor/Glad"
 group ""
-
-
-group "Core"
-	include "MordenOpenGL"
-group ""
-
-group "APP"
-	include "OpenGL"
-group ""
-
-

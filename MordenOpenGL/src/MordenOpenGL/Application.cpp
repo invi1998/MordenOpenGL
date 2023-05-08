@@ -1,4 +1,8 @@
-#include <MordenOpenGL.h>
+#include "hzpch.h"
+
+#include <GLFW/glfw3.h>
+
+#include "glad/gl.h"
 
 int main(void)
 {
@@ -9,7 +13,7 @@ int main(void)
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(640, 480, "Hello World", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();

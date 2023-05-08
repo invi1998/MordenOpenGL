@@ -1,5 +1,5 @@
 project "MordenOpenGL"
-	kind "StaticLib"
+	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
 	staticruntime "off"
@@ -7,7 +7,7 @@ project "MordenOpenGL"
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "src/hzpch.h"
+	pchheader "hzpch.h"
 	pchsource "src/hzpch.cpp"
 	
 
@@ -46,12 +46,7 @@ project "MordenOpenGL"
 			"HZ_BUILD_DLL"
 		}
 
-		-- 改为静态库后，就不需要将DLL拷贝到程序目录下了
-		--postbuildcommands
-		--{
-		--	("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/Sandbox")
-		--}
-		filter "configurations:Debug"
+	filter "configurations:Debug"
 		defines "HZ_DEBUG"
 		runtime "Debug"
 		symbols "on"
