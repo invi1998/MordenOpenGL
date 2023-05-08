@@ -132,8 +132,8 @@ int main(void)
 
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f,	// top
-		0.0f, -0.5f, 0.0f,  // bottom right
+		0.5f, 0.5f, 0.0f,	// top right
+		0.5f, -0.5f, 0.0f,  // bottom right
 		-0.5f, -0.5f, 0.0f,  // bottom left
 		-0.5f,  0.5f, 0.0f   // top left
 	};
