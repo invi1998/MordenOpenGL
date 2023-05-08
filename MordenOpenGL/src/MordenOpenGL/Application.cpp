@@ -1,8 +1,9 @@
 #include "hzpch.h"
 
+#include "glad/glad.h"
+
 #include <GLFW/glfw3.h>
 
-#include "glad/glad.h"
 
 int main(void)
 {
@@ -26,7 +27,15 @@ int main(void)
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        // GLAD是用来管理OpenGL的函数指针的，所以在调用任何OpenGL的函数之前我们需要初始化GLAD。
+        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+        {
+            std::cout << "Failed to initialize GLAD" << std::endl;
+            continue;
+        }
+
         /* Render here */
+        glClearColor(0.1f, 0.1f, 0.23f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         /* Swap front and back buffers */
