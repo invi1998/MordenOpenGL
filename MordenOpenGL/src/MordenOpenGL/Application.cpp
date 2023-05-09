@@ -4,6 +4,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Shader.h"
+
 constexpr uint32_t SCR_WIDTH = 800;
 constexpr uint32_t SCR_HEIGHT = 600;
 
@@ -20,9 +22,12 @@ const char* vertexShaderSource = R"(
 
 layout (location = 0) in vec3 a_Pos;
 
+out vec3 vertexColor;
+
 void main()
 {
 	gl_Position = vec4(a_Pos, 1.0f);
+	vertexColor = a_Pos;
 }
 )";
 
@@ -32,9 +37,11 @@ const char* fragmentShaderSource = R"(
 
 out vec4 FragColor;
 
+in vec3 vertexColor;
+
 void main()
 {
-	FragColor = vec4(0.94f, 0.13f, 0.212f, 1.0f);
+	FragColor = vec4(vertexColor * 0.9 + 0.6, 1.0f);
 }
 )";
 
@@ -135,6 +142,9 @@ int main(void)
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
+	// 这里用外置shader文件
+	Shader outShader("asserts/shaders/test.glsl");
+
 
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
@@ -181,7 +191,7 @@ int main(void)
 	glBindVertexArray(0);
 
 	// 取消该注释，即可绘制线框
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -195,7 +205,9 @@ int main(void)
 
 		// 绘制三角形
 
-		glUseProgram(shaderProgram);
+		// glUseProgram(shaderProgram);
+		glUseProgram(outShader.GetRendererID());
+
 		// 鉴于我们只有一个VAO，因此没有必要每次都绑定它，但我们会这样做以使事情更有条理。
 		glBindVertexArray(VAO);
 		// glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -213,6 +225,7 @@ int main(void)
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteProgram(shaderProgram);
+	glDeleteProgram(outShader.GetRendererID());
 
 	glfwTerminate();
 	return 0;
