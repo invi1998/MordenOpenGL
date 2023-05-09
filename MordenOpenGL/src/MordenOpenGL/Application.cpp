@@ -78,6 +78,12 @@ int main(void)
 
 	// 创建shader对象
 	// ---------------------------------------------------------------------
+
+	// 查询有多少个顶点属性可用（正常会有16，一些硬件设备会允许更多）
+	int nrAttributes;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+	std::cout << R"(可用顶点属性数：)" << nrAttributes << std::endl;
+
 	// 顶点着色器
 	uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
@@ -160,7 +166,7 @@ int main(void)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void*>(nullptr));
 	glEnableVertexAttribArray(0);
 
 	// 请注意，这是允许的，对glVertexAttribPointer 的调用将VBO注册为顶点属性的绑定顶点缓冲区对象，以便之后我们可以安全地取消绑定
@@ -175,7 +181,7 @@ int main(void)
 	glBindVertexArray(0);
 
 	// 取消该注释，即可绘制线框
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
