@@ -85,75 +85,17 @@ int main(void)
 	// 注册窗口resize时的回调函数
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	// 创建shader对象
-	// ---------------------------------------------------------------------
-
-	// 查询有多少个顶点属性可用（正常会有16，一些硬件设备会允许更多）
-	int nrAttributes;
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-	std::cout << R"(可用顶点属性数：)" << nrAttributes << std::endl;
-
-	// 顶点着色器
-	uint32_t vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-	// 编译shader
-	glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-	glCompileShader(vertexShader);
-
-	// 检查shader是否编译成功
-	int success;
-	char infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-		return -1;
-	}
-
-	// ---------------------------------------------------------------------
-	// 片段着色器
-	uint32_t fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-	glCompileShader(fragmentShader);
-	glGetShaderiv(fragmentShader, GL_FRAGMENT_SHADER, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-		return -1;
-	}
-
-	// ----------------------------------------------------------------------
-
-	// 链接着色器
-	uint32_t shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	// 检查链接结果
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-		return -1;
-	}
-
-	// 删除着色器
-	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
-
 	// 这里用外置shader文件
 	Shader outShader("asserts/shaders/test.glsl");
 
 
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f,	// top right
-		0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left
+		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
+		0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,	// top right
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+		-0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f   // top left
 	};
 
 	// 标记我们从0开始
@@ -195,6 +137,32 @@ int main(void)
 	// 取消该注释，即可绘制线框
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	// 纹理
+	uint32_t texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	// 为当前绑定纹理设置环绕，过滤方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// 加载并生成纹理
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("asserts/textures/R-C.jpg", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "纹理加载错误" << std::endl;
+	}
+
+	stbi_image_free(data);
+
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
 	{
@@ -226,7 +194,6 @@ int main(void)
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
-	glDeleteProgram(shaderProgram);
 	glDeleteProgram(outShader.GetRendererID());
 
 	glfwTerminate();
