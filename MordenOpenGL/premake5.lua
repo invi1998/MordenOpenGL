@@ -15,6 +15,8 @@ project "MordenOpenGL"
 	{
 		"src/**.h",
 		"src/**.cpp",
+		"vendor/stb_image/**.h",
+		"vendor/stb_image/**.cpp",
 	}
 
 	defines
@@ -27,7 +29,8 @@ project "MordenOpenGL"
 	{
 		"src",
 		"%{IncludeDir.GLFW}",
-		"%{IncludeDir.Glad}"
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.stb_image}",
 	}
 
 	links
