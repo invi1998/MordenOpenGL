@@ -88,8 +88,6 @@ int main(void)
 	// 这里用外置shader文件
 	Shader outShader("asserts/shaders/test.glsl");
 
-	outShader.SetInt("u_Texture", 0);
-
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
 		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
@@ -147,7 +145,7 @@ int main(void)
 	// 取消该注释，即可绘制线框
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	// 纹理
+	// 纹理1
 	uint32_t texture;
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -160,6 +158,8 @@ int main(void)
 
 	// 加载并生成纹理
 	int width, height, nrChannels;
+	// OpenGL要求y轴0.0坐标是在图片的底部的，但是图片的y轴0.0坐标通常在顶部。很幸运，stb_image.h能够在图像加载时帮助我们翻转y轴
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char* data = stbi_load("asserts/textures/R-C.jpg", &width, &height, &nrChannels, 0);
 	if (data)
 	{
@@ -172,6 +172,38 @@ int main(void)
 	}
 
 	stbi_image_free(data);
+
+	uint32_t texture2;
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	// 为当前绑定纹理设置环绕，过滤方式
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// 加载并生成纹理
+	int width2, height2, nrChannels2;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* data2 = stbi_load("asserts/textures/cat.png", &width2, &height2, &nrChannels2, 0);
+	if (data2)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "纹理2加载错误" << std::endl;
+	}
+
+	stbi_image_free(data2);
+
+	// 在设置uniform之前，必须先激活shader
+	glUseProgram(outShader.GetRendererID());
+
+	outShader.SetInt("u_Texture", 0);
+	outShader.SetInt("u_Texture2", 1);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -186,7 +218,10 @@ int main(void)
 		// 绘制三角形
 
 		// glUseProgram(shaderProgram);
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 		glUseProgram(outShader.GetRendererID());
 
 		// 鉴于我们只有一个VAO，因此没有必要每次都绑定它，但我们会这样做以使事情更有条理。
