@@ -28,6 +28,21 @@ uint32_t Shader::GetRendererID()
 	return m_RendererID;
 }
 
+void Shader::SetFloat(const std::string& name, float value)
+{
+	glUniform1f(glGetUniformLocation(m_RendererID, name.c_str()), value);
+}
+
+void Shader::SetInt(const std::string& name, int value)
+{
+	glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), value);
+}
+
+void Shader::SetIntArray(const std::string& name, int* values, uint32_t count)
+{
+	glUniform1iv(glGetUniformLocation(m_RendererID, name.c_str()), count, values);
+}
+
 std::string Shader::ReadFile(const std::string& filepath)
 {
 	std::string result;

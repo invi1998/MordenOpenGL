@@ -88,6 +88,7 @@ int main(void)
 	// 这里用外置shader文件
 	Shader outShader("asserts/shaders/test.glsl");
 
+	outShader.SetInt("u_Texture", 0);
 
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
@@ -120,8 +121,17 @@ int main(void)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void*>(nullptr));
+	// 位置属性
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(0));
 	glEnableVertexAttribArray(0);
+
+	// 应用颜色
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	// 应用纹理
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	// 请注意，这是允许的，对glVertexAttribPointer 的调用将VBO注册为顶点属性的绑定顶点缓冲区对象，以便之后我们可以安全地取消绑定
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -145,7 +155,7 @@ int main(void)
 	// 为当前绑定纹理设置环绕，过滤方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// 加载并生成纹理
@@ -176,6 +186,7 @@ int main(void)
 		// 绘制三角形
 
 		// glUseProgram(shaderProgram);
+		glBindTexture(GL_TEXTURE_2D, texture);
 		glUseProgram(outShader.GetRendererID());
 
 		// 鉴于我们只有一个VAO，因此没有必要每次都绑定它，但我们会这样做以使事情更有条理。
