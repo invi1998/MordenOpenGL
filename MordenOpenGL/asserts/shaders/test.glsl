@@ -9,9 +9,11 @@ layout (location = 2) in vec2 a_TexCoord;
 out vec3 vertexColor;
 out vec2 texCoord;
 
+uniform mat4 u_Transform;
+
 void main()
 {
-	gl_Position = vec4(a_Pos, 1.0f);
+	gl_Position = u_Transform * vec4(a_Pos, 1.0f);
 	vertexColor = (a_Pos * 0.9 + 0.6) + a_Color;
 	texCoord = a_TexCoord;
 }

@@ -5,6 +5,10 @@
 #include <cassert>
 #include <fstream>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 static GLenum ShaderTypeFromString(const std::string& type)
 {
 	if (type == "vertex") return GL_VERTEX_SHADER;
@@ -41,6 +45,32 @@ void Shader::SetInt(const std::string& name, int value)
 void Shader::SetIntArray(const std::string& name, int* values, uint32_t count)
 {
 	glUniform1iv(glGetUniformLocation(m_RendererID, name.c_str()), count, values);
+}
+
+void Shader::SetFloat3(const std::string& name, const glm::vec3& value)
+{
+	glUniform3f(glGetUniformLocation(m_RendererID, name.c_str()), value.x, value.y, value.z);
+}
+
+void Shader::SetFloat4(const std::string& name, const glm::vec4& value)
+{
+	glUniform4f(glGetUniformLocation(m_RendererID, name.c_str()), value.x, value.y, value.z, value.w);
+}
+
+void Shader::SetMat4(const std::string& name, const glm::mat4& value)
+{
+	glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+
+
+
+
+
+
+
+
+
+
+
 }
 
 std::string Shader::ReadFile(const std::string& filepath)

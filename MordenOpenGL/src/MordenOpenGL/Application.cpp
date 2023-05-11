@@ -7,7 +7,9 @@
 #include "Shader.h"
 
 #include <stb_image.h>
-#include <>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 constexpr uint32_t SCR_WIDTH = 800;
 constexpr uint32_t SCR_HEIGHT = 600;
@@ -203,6 +205,8 @@ int main(void)
 	// 在设置uniform之前，必须先激活shader
 	glUseProgram(outShader.GetRendererID());
 
+	glm::mat4 trans{ 1.0f };
+
 	outShader.SetInt("u_Texture", 0);
 	outShader.SetInt("u_Texture2", 1);
 
@@ -215,6 +219,9 @@ int main(void)
 		// 渲染指令
 		glClearColor(0.1f, 0.1f, 0.215f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		trans = glm::rotate(trans, static_cast<float>(sin(glfwGetTime())), glm::vec3(0.0f, 0.0f, 1.0f));
+		outShader.SetMat4("u_Transform", trans);
 
 		// 绘制三角形
 
