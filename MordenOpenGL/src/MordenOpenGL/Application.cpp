@@ -7,6 +7,7 @@
 #include "Shader.h"
 
 #include <stb_image.h>
+#include <>
 
 constexpr uint32_t SCR_WIDTH = 800;
 constexpr uint32_t SCR_HEIGHT = 600;
