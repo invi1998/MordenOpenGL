@@ -82,6 +82,8 @@ int main(void)
 		return -1;
 	}
 
+	glEnable(GL_DEPTH_TEST);
+
 	// 设置视口
 	glViewport(0, 0, 800, 600);
 
@@ -242,7 +244,7 @@ int main(void)
 	unsigned char* data2 = stbi_load("asserts/textures/cat.png", &width2, &height2, &nrChannels2, 0);
 	if (data2)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
@@ -280,7 +282,7 @@ int main(void)
 
 		// 观察矩阵
 		glm::mat4 view{ 1.0f };
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -500.0f));
 
 		// 视口宽高信息
 		int scwidth = 0, scheight = 0;
@@ -288,7 +290,7 @@ int main(void)
 		// 投影矩阵（透视投影）
 		glm::mat4 projection{ 1.0f };
 		glfwGetWindowSize(window, &scwidth, &scheight);
-		projection = glm::perspective(glm::radians(45.0f), static_cast<float>(scwidth) / static_cast<float>(scheight), 0.1f, 100.0f);
+		projection = glm::perspective(glm::radians(45.0f), static_cast<float>(scwidth) / static_cast<float>(scheight), 0.1f, 1000.0f);
 
 		// model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 		outShader.SetMat4("u_View", view);
