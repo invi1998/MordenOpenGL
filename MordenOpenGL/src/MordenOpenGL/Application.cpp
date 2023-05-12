@@ -205,10 +205,29 @@ int main(void)
 	// 在设置uniform之前，必须先激活shader
 	glUseProgram(outShader.GetRendererID());
 
-	glm::mat4 trans{ 1.0f };
-
 	outShader.SetInt("u_Texture", 0);
 	outShader.SetInt("u_Texture2", 1);
+
+	// 模型矩阵
+	glm::mat4 model{1.0f};
+	// 沿X轴旋转-55度
+	// model = glm::translate(model, glm::vec3{ 0.0f, 0.0f, 0.0f });
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3{ 1.0f, 0.0f, 0.0f });
+	
+
+	// 观察矩阵
+	glm::mat4 view{1.0f};
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, 10.0f));
+	// view = glm::lookAt(glm::vec3(0.0f, 0.0f, 113.0f),glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 1.0f, 0.0f));
+	// view = glm::lookAt(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	// 视口宽高信息
+	int scwidth = 0, scheight = 0;
+
+	// 投影矩阵（透视投影）
+	glm::mat4 projection{1.0f};
+
+	
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -220,9 +239,6 @@ int main(void)
 		glClearColor(0.1f, 0.1f, 0.215f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		trans = glm::rotate(trans, static_cast<float>(sin(glfwGetTime())), glm::vec3(0.0f, 0.0f, 1.0f));
-		outShader.SetMat4("u_Transform", trans);
-
 		// 绘制三角形
 
 		// glUseProgram(shaderProgram);
@@ -231,6 +247,21 @@ int main(void)
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glUseProgram(outShader.GetRendererID());
+
+		// trans = glm::rotate(trans, static_cast<float>(0.1 * sin(glfwGetTime())), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// 投影矩阵
+		glfwGetWindowSize(window, &scwidth, &scheight);
+		projection = glm::perspective(glm::radians(45.0f), static_cast<float>(scwidth) / static_cast<float>(scheight), 0.1f, 100.0f);
+
+		// model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+		// 然后做 mvp 变化(注意矩阵运算的顺序是相反的（记住我们需要从右往左阅读矩阵的乘法）
+		glm::mat4 trans = projection * view * model;
+		outShader.SetMat4("u_Transform", trans);
+
+		/*outShader.SetMat4("u_Model", model);
+		outShader.SetMat4("u_View", view);
+		outShader.SetMat4("u_Projection", projection);*/
 
 		// 鉴于我们只有一个VAO，因此没有必要每次都绑定它，但我们会这样做以使事情更有条理。
 		glBindVertexArray(VAO);

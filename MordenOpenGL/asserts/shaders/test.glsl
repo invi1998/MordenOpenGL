@@ -10,12 +10,16 @@ out vec3 vertexColor;
 out vec2 texCoord;
 
 uniform mat4 u_Transform;
+uniform mat4 u_Model;
+uniform mat4 u_View;
+uniform mat4 u_Projection;
 
 void main()
 {
-	gl_Position = u_Transform * vec4(a_Pos, 1.0f);
 	vertexColor = (a_Pos * 0.9 + 0.6) + a_Color;
 	texCoord = a_TexCoord;
+	gl_Position = u_Transform * vec4(a_Pos, 1.0f);
+	// gl_Position = u_Projection * u_View * u_Model * vec4(a_Pos, 1.0f);
 }
 
 // Æ¬¶Î×ÅÉ«Æ÷
