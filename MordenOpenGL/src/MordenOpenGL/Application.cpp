@@ -93,11 +93,61 @@ int main(void)
 
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
-		//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-		0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,	// top right
-		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
-		-0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f   // top left
+		// ---- 位置 ---      - 纹理坐标 -
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
 	// 标记我们从0开始
@@ -111,7 +161,7 @@ int main(void)
 	// 创建顶点数组对象，顶点缓冲对象，元素缓冲对象
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	// glGenBuffers(1, &EBO);
 
 	// 绑定顶点数据对象，然后绑定并且设置缓冲，然后配置顶点属性
 	glBindVertexArray(VAO);
@@ -119,23 +169,23 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// 位置属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
 	glEnableVertexAttribArray(0);
 
 	// 应用颜色
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+	// glEnableVertexAttribArray(1);
 
 	// 应用纹理
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	// 请注意，这是允许的，对glVertexAttribPointer 的调用将VBO注册为顶点属性的绑定顶点缓冲区对象，以便之后我们可以安全地取消绑定
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 请记住：当 VAO 处于活动状态时，不要取消绑定 EBO，因为绑定的元素缓冲区对象存储在 VAO 中;保持EBO绑定。
 	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -143,7 +193,7 @@ int main(void)
 	// 之后可以取消绑定 VAO，以便其他 VAO 调用不会意外修改此 VAO，但这种情况很少发生。
 	// 修改其他 VAO 无论如何都需要调用glBindVertexArray，因此当不是直接需要时，我们通常不会取消绑定VAOs（也不是VBO）。
 
-	glBindVertexArray(0);
+	// glBindVertexArray(0);
 
 	// 取消该注释，即可绘制线框
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -207,26 +257,6 @@ int main(void)
 
 	outShader.SetInt("u_Texture", 0);
 	outShader.SetInt("u_Texture2", 1);
-
-	// 模型矩阵
-	glm::mat4 model{1.0f};
-	// 沿X轴旋转-55度
-	// model = glm::translate(model, glm::vec3{ 0.0f, 0.0f, 0.0f });
-	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3{ 1.0f, 0.0f, 0.0f });
-	
-
-	// 观察矩阵
-	glm::mat4 view{1.0f};
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, 10.0f));
-	// view = glm::lookAt(glm::vec3(0.0f, 0.0f, 113.0f),glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 1.0f, 0.0f));
-	// view = glm::lookAt(glm::vec3(10.0f, 10.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	// 视口宽高信息
-	int scwidth = 0, scheight = 0;
-
-	// 投影矩阵（透视投影）
-	glm::mat4 projection{1.0f};
-
 	
 
 	// 渲染循环
@@ -237,7 +267,7 @@ int main(void)
 
 		// 渲染指令
 		glClearColor(0.1f, 0.1f, 0.215f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// 绘制三角形
 
@@ -248,25 +278,45 @@ int main(void)
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glUseProgram(outShader.GetRendererID());
 
-		// trans = glm::rotate(trans, static_cast<float>(0.1 * sin(glfwGetTime())), glm::vec3(0.0f, 0.0f, 1.0f));
+		// 观察矩阵
+		glm::mat4 view{ 1.0f };
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
-		// 投影矩阵
+		// 视口宽高信息
+		int scwidth = 0, scheight = 0;
+
+		// 投影矩阵（透视投影）
+		glm::mat4 projection{ 1.0f };
 		glfwGetWindowSize(window, &scwidth, &scheight);
 		projection = glm::perspective(glm::radians(45.0f), static_cast<float>(scwidth) / static_cast<float>(scheight), 0.1f, 100.0f);
 
 		// model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-		// 然后做 mvp 变化(注意矩阵运算的顺序是相反的（记住我们需要从右往左阅读矩阵的乘法）
-		glm::mat4 trans = projection * view * model;
-		outShader.SetMat4("u_Transform", trans);
-
-		/*outShader.SetMat4("u_Model", model);
 		outShader.SetMat4("u_View", view);
-		outShader.SetMat4("u_Projection", projection);*/
+		outShader.SetMat4("u_Projection", projection);
+
+		glBindVertexArray(VAO);
+		for (size_t i = 0; i < 10; i++)
+		{
+			glm::mat4 model{ 1.0f };
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			outShader.SetMat4("u_Model", model);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		// trans = glm::rotate(trans, static_cast<float>(0.1 * sin(glfwGetTime())), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// 然后做 mvp 变化(注意矩阵运算的顺序是相反的（记住我们需要从右往左阅读矩阵的乘法）
+		// glm::mat4 trans = projection * view * model;
+		// outShader.SetMat4("u_Transform", trans);
+
 
 		// 鉴于我们只有一个VAO，因此没有必要每次都绑定它，但我们会这样做以使事情更有条理。
-		glBindVertexArray(VAO);
+		// glBindVertexArray(VAO);
 		// glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		// glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 		// glBindVertexArray(0);	// 不需要每次都解绑
 
 		// 检查并调用事件，交换缓冲
@@ -278,7 +328,7 @@ int main(void)
 	// 可选：在资源超出用途后取消分配所有资源：
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
+	// glDeleteBuffers(1, &EBO);
 	glDeleteProgram(outShader.GetRendererID());
 
 	glfwTerminate();
