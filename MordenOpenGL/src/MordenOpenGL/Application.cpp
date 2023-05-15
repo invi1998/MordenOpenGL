@@ -75,6 +75,9 @@ int main(void)
 	//创建完窗口我们就可以通知GLFW将我们窗口的上下文设置为当前线程的主上下文了。
 	glfwMakeContextCurrent(window);
 
+	// 注册窗口resize时的回调函数
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
 	// 初始化GLAD，传入用来加载系统相关的OpenGL函数指针地址的函数
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
 	{
@@ -86,9 +89,6 @@ int main(void)
 
 	// 设置视口
 	glViewport(0, 0, 800, 600);
-
-	// 注册窗口resize时的回调函数
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	// 这里用外置shader文件
 	Shader outShader("asserts/shaders/test.glsl");
@@ -208,7 +208,7 @@ int main(void)
 	// 为当前绑定纹理设置环绕，过滤方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// 加载并生成纹理
@@ -235,13 +235,13 @@ int main(void)
 	// 为当前绑定纹理设置环绕，过滤方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// 加载并生成纹理
 	int width2, height2, nrChannels2;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data2 = stbi_load("asserts/textures/cat.png", &width2, &height2, &nrChannels2, 0);
+	unsigned char* data2 = stbi_load("asserts/textures/nofind.png", &width2, &height2, &nrChannels2, 0);
 	if (data2)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
@@ -256,7 +256,6 @@ int main(void)
 
 	// 在设置uniform之前，必须先激活shader
 	glUseProgram(outShader.GetRendererID());
-
 	outShader.SetInt("u_Texture", 0);
 	outShader.SetInt("u_Texture2", 1);
 	
@@ -282,7 +281,7 @@ int main(void)
 
 		// 观察矩阵
 		glm::mat4 view{ 1.0f };
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -500.0f));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -300.0f));
 
 		// 视口宽高信息
 		int scwidth = 0, scheight = 0;
@@ -292,7 +291,6 @@ int main(void)
 		glfwGetWindowSize(window, &scwidth, &scheight);
 		projection = glm::perspective(glm::radians(45.0f), static_cast<float>(scwidth) / static_cast<float>(scheight), 0.1f, 1000.0f);
 
-		// model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 		outShader.SetMat4("u_View", view);
 		outShader.SetMat4("u_Projection", projection);
 
@@ -302,7 +300,8 @@ int main(void)
 			glm::mat4 model{ 1.0f };
 			model = glm::translate(model, cubePositions[i]);
 			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			// model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(1.0f, 0.3f, 0.5f));
 			outShader.SetMat4("u_Model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
