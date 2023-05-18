@@ -11,8 +11,23 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-constexpr uint32_t SCR_WIDTH = 800;
-constexpr uint32_t SCR_HEIGHT = 600;
+static uint32_t SCR_WIDTH = 800;
+static uint32_t SCR_HEIGHT = 600;
+
+static glm::vec3 cameraPos{ 0.0f, 0.0f, 3.0f };
+static glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
+static glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+
+bool firstMouse = true;
+float yaw = -90.0f;
+float pitch = 0.0f;
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+float fov = 45.0f;
 
 // 窗口大小调整时的回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -20,35 +35,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 // 退出按钮事件
 void processInput(GLFWwindow* window);
 
+// 鼠标事件
+void mouse_callbak(GLFWwindow* window, double xposIn, double yposIn);
 
-// 顶点着色器
-const char* vertexShaderSource = R"(
-#version 330 core
-
-layout (location = 0) in vec3 a_Pos;
-
-out vec3 vertexColor;
-
-void main()
-{
-	gl_Position = vec4(a_Pos, 1.0f);
-	vertexColor = a_Pos;
-}
-)";
-
-// 片段着色器
-const char* fragmentShaderSource = R"(
-#version 330 core
-
-out vec4 FragColor;
-
-in vec3 vertexColor;
-
-void main()
-{
-	FragColor = vec4(vertexColor * 0.9 + 0.6, 1.0f);
-}
-)";
+// 鼠标滚轮事件
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 int main(void)
 {
@@ -77,6 +68,9 @@ int main(void)
 
 	// 注册窗口resize时的回调函数
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+	glfwSetCursorPosCallback(window, mouse_callbak);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// 初始化GLAD，传入用来加载系统相关的OpenGL函数指针地址的函数
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
@@ -152,13 +146,7 @@ int main(void)
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
-	// 标记我们从0开始
-	uint32_t indices[] = {
-		0, 1, 3,  // first Triangle
-		1, 2, 3   // second Triangle
-	};
-
-	uint32_t VBO, VAO, EBO;
+	uint32_t VBO, VAO;
 
 	// 创建顶点数组对象，顶点缓冲对象，元素缓冲对象
 	glGenVertexArrays(1, &VAO);
@@ -170,9 +158,6 @@ int main(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// 位置属性
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
@@ -201,9 +186,9 @@ int main(void)
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// 纹理1
-	uint32_t texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	uint32_t texture1;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
 
 	// 为当前绑定纹理设置环绕，过滤方式
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -244,7 +229,7 @@ int main(void)
 	unsigned char* data2 = stbi_load("asserts/textures/nofind.png", &width2, &height2, &nrChannels2, 0);
 	if (data2)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
@@ -255,14 +240,20 @@ int main(void)
 	stbi_image_free(data2);
 
 	// 在设置uniform之前，必须先激活shader
-	glUseProgram(outShader.GetRendererID());
-	outShader.SetInt("u_Texture", 0);
+	outShader.Use();
+	outShader.SetInt("u_Texture1", 0);
 	outShader.SetInt("u_Texture2", 1);
-	
+
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
 	{
+		// per-frame time logic
+		// --------------------
+		float currentFrame = static_cast<float>(glfwGetTime());
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		// 事件输入
 		processInput(window);
 
@@ -274,24 +265,26 @@ int main(void)
 
 		// glUseProgram(shaderProgram);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glBindTexture(GL_TEXTURE_2D, texture1);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
-		glUseProgram(outShader.GetRendererID());
+
+		outShader.Use();
 
 		// 观察矩阵
 		glm::mat4 view{ 1.0f };
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -300.0f));
 
-		// 视口宽高信息
-		int scwidth = 0, scheight = 0;
+		/*const float radius = 10.0f;
+		float camX = static_cast<float>(sin(glfwGetTime() * radius));
+		float camZ = static_cast<float>(cos(glfwGetTime() * radius));
 
-		// 投影矩阵（透视投影）
-		glm::mat4 projection{ 1.0f };
-		glfwGetWindowSize(window, &scwidth, &scheight);
-		projection = glm::perspective(glm::radians(45.0f), static_cast<float>(scwidth) / static_cast<float>(scheight), 0.1f, 1000.0f);
+		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
+
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 		outShader.SetMat4("u_View", view);
+
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
 		outShader.SetMat4("u_Projection", projection);
 
 		glBindVertexArray(VAO);
@@ -299,9 +292,9 @@ int main(void)
 		{
 			glm::mat4 model{ 1.0f };
 			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
+			float angle = 2000.0f * i;
 			// model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			model = glm::rotate(model, (float)glfwGetTime() * glm::radians(150.0f), glm::vec3(1.0f, 0.3f, 0.5f));
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 			outShader.SetMat4("u_Model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -340,13 +333,84 @@ int main(void)
 // ---------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+	SCR_WIDTH = width;
+	SCR_HEIGHT = height;
 	glViewport(0, 0, width, height);
 }
 
 void processInput(GLFWwindow* window)
 {
+	float cameraSpeed = static_cast<float>(2.5 * deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		cameraPos += cameraSpeed * cameraFront;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		cameraPos -= cameraSpeed * cameraFront;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	}
+		
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	}
+}
+
+void mouse_callbak(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = ypos - lastY;
+
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	// make sure that when pitch is out of bounds, screen doesn't get flipped
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
+
+}
+
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	fov -= static_cast<float>(yoffset);
+	if (fov < 1.0f)
+		fov = 1.0f;
+	if (fov > 45.0f)
+		fov = 45.0f;
 }

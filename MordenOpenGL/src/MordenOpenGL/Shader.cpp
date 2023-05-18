@@ -32,6 +32,11 @@ uint32_t Shader::GetRendererID()
 	return m_RendererID;
 }
 
+void Shader::Use()
+{
+	glUseProgram(m_RendererID);
+}
+
 void Shader::SetFloat(const std::string& name, float value)
 {
 	glUniform1f(glGetUniformLocation(m_RendererID, name.c_str()), value);

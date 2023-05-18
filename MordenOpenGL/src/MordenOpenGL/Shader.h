@@ -10,6 +10,8 @@ public:
 
 	uint32_t GetRendererID();
 
+	void Use();
+
 
 	void SetFloat(const std::string& name, float value);
 	void SetInt(const std::string& name, int value);
