@@ -26,6 +26,9 @@ public:
 
     void ProcessMouseScroll(float yoffset);
 
+public:
+    float GetZoom() const { return zoom_; }
+
 private:
     void UpdateCameraVectors_();
 
