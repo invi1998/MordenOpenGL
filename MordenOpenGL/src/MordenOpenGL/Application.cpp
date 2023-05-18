@@ -30,7 +30,7 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 float fov = 45.0f;
 
-Camera camera(glm::vec3{ 0.0f, 0.0f, 3.0f });
+Camera camera(glm::vec3{ 0.0f, 0.0f, 300.0f });
 
 // 窗口大小调整时的回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
