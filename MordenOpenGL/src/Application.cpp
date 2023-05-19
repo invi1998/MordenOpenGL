@@ -4,8 +4,8 @@
 
 #include <GLFW/glfw3.h>
 
-#include "Shader.h"
-#include "Camera.h"
+#include "MordenOpenGL/Shader.h"
+#include "MordenOpenGL/Camera.h"
 
 #include <stb_image.h>
 #include <glm/glm.hpp>
