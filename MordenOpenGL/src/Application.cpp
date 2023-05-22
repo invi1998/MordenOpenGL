@@ -30,7 +30,10 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 float fov = 45.0f;
 
-Camera camera(glm::vec3{ 0.0f, 0.0f, 300.0f });
+// lighting
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+Camera camera(glm::vec3{ 0.0f, 0.0f, 500.0f });
 
 // 窗口大小调整时的回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -88,165 +91,81 @@ int main(void)
 	glViewport(0, 0, 800, 600);
 
 	// 这里用外置shader文件
-	Shader outShader("asserts/shaders/test.glsl");
+	Shader lightShader("asserts/shaders/light.glsl");
+	Shader cubeShader("asserts/shaders/cube.glsl");
 
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
-		// ---- 位置 ---      - 纹理坐标 -
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		// ---- 位置 ---      - 纹理坐标（无） -
+		-0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,
+		-0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,
 
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f, -0.5f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,
 	};
 
-	glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-
-	uint32_t VBO, VAO;
+	uint32_t VBO, cubeVAO;
 
 	// 创建顶点数组对象，顶点缓冲对象，元素缓冲对象
-	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	// glGenBuffers(1, &EBO);
 
 	// 绑定顶点数据对象，然后绑定并且设置缓冲，然后配置顶点属性
-	glBindVertexArray(VAO);
+	glGenVertexArrays(1, &cubeVAO);
+	glBindVertexArray(cubeVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	// 位置属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
 	glEnableVertexAttribArray(0);
 
-	// 应用颜色
-	// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-	// glEnableVertexAttribArray(1);
+	// 光源立方体
+	uint32_t lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
 
-	// 应用纹理
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	// 请注意，这是允许的，对glVertexAttribPointer 的调用将VBO注册为顶点属性的绑定顶点缓冲区对象，以便之后我们可以安全地取消绑定
-	// glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// 请记住：当 VAO 处于活动状态时，不要取消绑定 EBO，因为绑定的元素缓冲区对象存储在 VAO 中;保持EBO绑定。
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	// 之后可以取消绑定 VAO，以便其他 VAO 调用不会意外修改此 VAO，但这种情况很少发生。
-	// 修改其他 VAO 无论如何都需要调用glBindVertexArray，因此当不是直接需要时，我们通常不会取消绑定VAOs（也不是VBO）。
-
-	// glBindVertexArray(0);
-
-	// 取消该注释，即可绘制线框
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	// 纹理1
-	uint32_t texture1;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-
-	// 为当前绑定纹理设置环绕，过滤方式
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// 加载并生成纹理
-	int width, height, nrChannels;
-	// OpenGL要求y轴0.0坐标是在图片的底部的，但是图片的y轴0.0坐标通常在顶部。很幸运，stb_image.h能够在图像加载时帮助我们翻转y轴
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data = stbi_load("asserts/textures/R-C.jpg", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "纹理加载错误" << std::endl;
-	}
-
-	stbi_image_free(data);
-
-	uint32_t texture2;
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-
-	// 为当前绑定纹理设置环绕，过滤方式
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// 加载并生成纹理
-	int width2, height2, nrChannels2;
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data2 = stbi_load("asserts/textures/nofind.png", &width2, &height2, &nrChannels2, 0);
-	if (data2)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "纹理2加载错误" << std::endl;
-	}
-
-	stbi_image_free(data2);
-
-	// 在设置uniform之前，必须先激活shader
-	outShader.Use();
-	outShader.SetInt("u_Texture1", 0);
-	outShader.SetInt("u_Texture2", 1);
-
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void*>(0));
+	glEnableVertexAttribArray(0);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -264,59 +183,35 @@ int main(void)
 		glClearColor(0.1f, 0.1f, 0.215f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 绘制三角形
+		// 渲染光源
+		lightShader.Use();
+		lightShader.SetVec3("u_ObjectColor", glm::vec3{1.0f, 0.5f, 0.21f});
+		lightShader.SetVec3("u_LightColor", glm::vec3{ 1.0f, 1.0f, 1.0f });
 
-		// glUseProgram(shaderProgram);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		// view/projection transformations
+		glm::mat4 projection = glm::perspective(glm::radians(camera.GetZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 view = camera.GetViewMatrix();
+		lightShader.SetMat4("u_Projection", projection);
+		lightShader.SetMat4("u_View", view);
 
-		outShader.Use();
+		// world transformation
+		glm::mat4 model = glm::mat4(1.0f);
+		lightShader.SetMat4("u_Model", model);
 
-		// 观察矩阵
-		glm::mat4 view{ 1.0f };
+		// 渲染立方体
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		/*const float radius = 10.0f;
-		float camX = static_cast<float>(sin(glfwGetTime() * radius));
-		float camZ = static_cast<float>(cos(glfwGetTime() * radius));
+		cubeShader.Use();
+		cubeShader.SetMat4("u_Projection", projection);
+		cubeShader.SetMat4("u_View", view);
 
-		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));*/
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.2f));
+		cubeShader.SetMat4("u_Model", model);
 
-		// view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-		view = camera.GetViewMatrix();
-
-		outShader.SetMat4("u_View", view);
-
-		glm::mat4 projection = glm::perspective(glm::radians(camera.GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
-		outShader.SetMat4("u_Projection", projection);
-
-		glBindVertexArray(VAO);
-		for (size_t i = 0; i < 10; i++)
-		{
-			glm::mat4 model{ 1.0f };
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 2000.0f * i;
-			// model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-			outShader.SetMat4("u_Model", model);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		// trans = glm::rotate(trans, static_cast<float>(0.1 * sin(glfwGetTime())), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		// 然后做 mvp 变化(注意矩阵运算的顺序是相反的（记住我们需要从右往左阅读矩阵的乘法）
-		// glm::mat4 trans = projection * view * model;
-		// outShader.SetMat4("u_Transform", trans);
-
-
-		// 鉴于我们只有一个VAO，因此没有必要每次都绑定它，但我们会这样做以使事情更有条理。
-		// glBindVertexArray(VAO);
-		// glDrawArrays(GL_TRIANGLES, 0, 6);
-		// glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-		// glBindVertexArray(0);	// 不需要每次都解绑
-
+		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
 		glfwSwapBuffers(window);
@@ -324,10 +219,9 @@ int main(void)
 	}
 
 	// 可选：在资源超出用途后取消分配所有资源：
-	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
-	// glDeleteBuffers(1, &EBO);
-	glDeleteProgram(outShader.GetRendererID());
 
 	glfwTerminate();
 	return 0;

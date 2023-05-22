@@ -7,6 +7,7 @@ class Shader
 {
 public:
 	Shader(const std::string& filePath);
+	~Shader();
 
 	uint32_t GetRendererID();
 
@@ -19,6 +20,9 @@ public:
 	void SetFloat3(const std::string& name, const glm::vec3& value);
 	void SetFloat4(const std::string& name, const glm::vec4& value);
 	void SetMat4(const std::string& name, const glm::mat4& value);
+	void SetVec2(const std::string& name, const glm::vec2& value);
+	void SetVec3(const std::string& name, const glm::vec3& value);
+	void SetVec4(const std::string& name, const glm::vec4& value);
 
 private:
 	std::string ReadFile(const std::string& filepath);

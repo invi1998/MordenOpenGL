@@ -27,6 +27,11 @@ Shader::Shader(const std::string& filePath):m_FilePath(filePath)
 	CompileShader(shaderSource);
 }
 
+Shader::~Shader()
+{
+	glDeleteProgram(m_RendererID);
+}
+
 uint32_t Shader::GetRendererID()
 {
 	return m_RendererID;
@@ -66,6 +71,21 @@ void Shader::SetMat4(const std::string& name, const glm::mat4& value)
 {
 	glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 
+}
+
+void Shader::SetVec2(const std::string& name, const glm::vec2& value)
+{
+	glUniform2fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, &value[0]);
+}
+
+void Shader::SetVec3(const std::string& name, const glm::vec3& value)
+{
+	glUniform3fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, &value[0]);
+}
+
+void Shader::SetVec4(const std::string& name, const glm::vec4& value)
+{
+	glUniform4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, &value[0]);
 }
 
 std::string Shader::ReadFile(const std::string& filepath)
