@@ -22,7 +22,7 @@ float lastFrame = 0.0f;
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
-Camera camera(glm::vec3{ 0.0f, 0.2f, 150.0f });
+Camera camera(glm::vec3{ 0.0f, 0.0f, 150.0f });
 bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -180,12 +180,14 @@ int main(void)
 		// 渲染指令
 		glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// glClear(GL_COLOR_BUFFER_BIT);
 
 		// 渲染立方体
 		cubeShader.Use();
 		cubeShader.SetVec3("u_ObjectColor", glm::vec3{1.0f, 0.5f, 0.21f});
 		cubeShader.SetVec3("u_LightColor", glm::vec3{ 1.0f, 1.0f, 1.0f });
 		cubeShader.SetVec3("u_LightPos", lightPos);
+		cubeShader.SetVec3("u_ViewPos", camera.GetPosition());
 
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
