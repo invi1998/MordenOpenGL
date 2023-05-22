@@ -70,22 +70,21 @@ void Shader::SetFloat4(const std::string& name, const glm::vec4& value)
 void Shader::SetMat4(const std::string& name, const glm::mat4& value)
 {
 	glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
-
 }
 
 void Shader::SetVec2(const std::string& name, const glm::vec2& value)
 {
-	glUniform2fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, &value[0]);
+	glUniform2fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
 void Shader::SetVec3(const std::string& name, const glm::vec3& value)
 {
-	glUniform3fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, &value[0]);
+	glUniform3fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
 void Shader::SetVec4(const std::string& name, const glm::vec4& value)
 {
-	glUniform4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, &value[0]);
+	glUniform4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, glm::value_ptr(value));
 }
 
 std::string Shader::ReadFile(const std::string& filepath)

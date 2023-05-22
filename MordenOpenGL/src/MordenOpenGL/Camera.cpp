@@ -5,10 +5,20 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-	: front_(glm::vec3(0.0f, 0.0f, -1.0f)), camera_speed_(2.5f), sensitivity_(0.1f), zoom_(45.0f)
+	: front_(glm::vec3(0.0f, 0.0f, -1.0f)), camera_speed_(SPEED), sensitivity_(SENSITIVITY), zoom_(ZOOM)
 {
 	position_ = position;
 	world_up_ = up;
+	yaw_ = yaw;
+	pitch_ = pitch;
+	UpdateCameraVectors_();
+}
+
+Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
+	: front_(glm::vec3(0.0f, 0.0f, -1.0f)), camera_speed_(SPEED), sensitivity_(SENSITIVITY), zoom_(ZOOM)
+{
+	position_ = glm::vec3(posX, posY, posZ);
+	world_up_ = glm::vec3(upX, upY, upZ);
 	yaw_ = yaw;
 	pitch_ = pitch;
 	UpdateCameraVectors_();

@@ -15,25 +15,17 @@
 static uint32_t SCR_WIDTH = 800;
 static uint32_t SCR_HEIGHT = 600;
 
-static glm::vec3 cameraPos{ 0.0f, 0.0f, 3.0f };
-static glm::vec3 cameraFront{ 0.0f, 0.0f, -1.0f };
-static glm::vec3 cameraUp{ 0.0f, 1.0f, 0.0f };
-
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-bool firstMouse = true;
-float yaw = -90.0f;
-float pitch = 0.0f;
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-float fov = 45.0f;
-
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
-Camera camera(glm::vec3{ 0.0f, 0.0f, 500.0f });
+Camera camera(glm::vec3{ 0.0f, 0.2f, 150.0f });
+bool firstMouse = true;
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
 
 // 窗口大小调整时的回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -61,7 +53,7 @@ int main(void)
 #endif
 
 	// 创建一个窗口对象，这个窗口对象存放了所有和窗口相关的数据，而且会被GLFW的其他函数频繁地用到
-	GLFWwindow* window = glfwCreateWindow(800, 600, "Hello World", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Hello World", nullptr, nullptr);
 	if (!window)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -78,6 +70,8 @@ int main(void)
 	glfwSetCursorPosCallback(window, mouse_callbak);
 	glfwSetScrollCallback(window, scroll_callback);
 
+	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	// 初始化GLAD，传入用来加载系统相关的OpenGL函数指针地址的函数
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
 	{
@@ -88,7 +82,7 @@ int main(void)
 	glEnable(GL_DEPTH_TEST);
 
 	// 设置视口
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 	// 这里用外置shader文件
 	Shader lightShader("asserts/shaders/light.glsl");
@@ -96,48 +90,48 @@ int main(void)
 
 	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
 	float vertices[] = {
-		// ---- 位置 ---      - 纹理坐标（无） -
-		-0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,
-		-0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
+		// ---- 位置 ---      - 顶点法向量（因为对于立方体的顶点他的法向量比较简单，所以这里直接传入） -
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-		-0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-		 0.5f,  0.5f,  0.5f,
-		 0.5f,  0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-		-0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-		-0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 	};
 
 	uint32_t VBO, cubeVAO;
@@ -154,8 +148,12 @@ int main(void)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	// 位置属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void*>(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(0));
 	glEnableVertexAttribArray(0);
+
+	// 法向量
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	// 光源立方体
 	uint32_t lightVAO;
@@ -164,7 +162,7 @@ int main(void)
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void*>(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), static_cast<void*>(0));
 	glEnableVertexAttribArray(0);
 
 	// 渲染循环
@@ -180,38 +178,39 @@ int main(void)
 		processInput(window);
 
 		// 渲染指令
-		glClearColor(0.1f, 0.1f, 0.215f, 1.0f);
+		glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 渲染光源
-		lightShader.Use();
-		lightShader.SetVec3("u_ObjectColor", glm::vec3{1.0f, 0.5f, 0.21f});
-		lightShader.SetVec3("u_LightColor", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		// 渲染立方体
+		cubeShader.Use();
+		cubeShader.SetVec3("u_ObjectColor", glm::vec3{1.0f, 0.5f, 0.21f});
+		cubeShader.SetVec3("u_LightColor", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		cubeShader.SetVec3("u_LightPos", lightPos);
 
 		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.GetZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
-		lightShader.SetMat4("u_Projection", projection);
-		lightShader.SetMat4("u_View", view);
+		cubeShader.SetMat4("u_Projection", projection);
+		cubeShader.SetMat4("u_View", view);
 
 		// world transformation
 		glm::mat4 model = glm::mat4(1.0f);
-		lightShader.SetMat4("u_Model", model);
+		cubeShader.SetMat4("u_Model", model);
 
-		// 渲染立方体
-		glBindVertexArray(lightVAO);
+		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		cubeShader.Use();
-		cubeShader.SetMat4("u_Projection", projection);
-		cubeShader.SetMat4("u_View", view);
+		// 渲染光源
+		lightShader.Use();
+		lightShader.SetMat4("u_Projection", projection);
+		lightShader.SetMat4("u_View", view);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
-		cubeShader.SetMat4("u_Model", model);
+		lightShader.SetMat4("u_Model", model);
 
-		glBindVertexArray(cubeVAO);
+		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		// 检查并调用事件，交换缓冲
