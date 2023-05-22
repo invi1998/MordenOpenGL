@@ -36,10 +36,10 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	switch (direction)
 	{
 	case FORWARD:
-		position_ += front_ * velocity;
+		position_ += front_ * velocity * 100.0f;
 		break;
 	case BACKWARD:
-		position_ -= front_ * velocity;
+		position_ -= front_ * velocity * 100.0f;
 		break;
 	case LEFT:
 		position_ -= right_ * velocity;
@@ -77,11 +77,10 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPi
 
 void Camera::ProcessMouseScroll(float yoffset)
 {
-	if (zoom_ >= 1.0f && zoom_ <= 45.0f)
-		zoom_ -= yoffset;
-	if (zoom_ <= 1.0f)
+	zoom_ -= (float)yoffset;
+	if (zoom_ < 1.0f)
 		zoom_ = 1.0f;
-	if (zoom_ >= 45.0f)
+	if (zoom_ > 45.0f)
 		zoom_ = 45.0f;
 }
 

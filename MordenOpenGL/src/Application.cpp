@@ -22,7 +22,7 @@ float lastFrame = 0.0f;
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
-Camera camera(glm::vec3{ 0.0f, 0.0f, 150.0f });
+Camera camera(glm::vec3{ 0.0f, 0.0f, 200.0f });
 bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -88,7 +88,7 @@ int main(void)
 	Shader lightShader("asserts/shaders/light.glsl");
 	Shader cubeShader("asserts/shaders/cube.glsl");
 
-	// 装备顶点数据（这里绘制一个三角形），配置顶点属性
+	// 顶点数据
 	float vertices[] = {
 		// ---- 位置 ---      - 顶点法向量（因为对于立方体的顶点他的法向量比较简单，所以这里直接传入） -
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -190,13 +190,16 @@ int main(void)
 		cubeShader.SetVec3("u_ViewPos", camera.GetPosition());
 
 		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
-		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection{ 1.0f };
+		projection = glm::perspective(glm::radians(camera.GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 10000.0f);
+		glm::mat4 view{ 1.0f };
+		view = camera.GetViewMatrix();
 		cubeShader.SetMat4("u_Projection", projection);
 		cubeShader.SetMat4("u_View", view);
 
 		// world transformation
-		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 model{ 1.0f };
+		model = glm::rotate(model, 15.0f, glm::vec3(1.0f));
 		cubeShader.SetMat4("u_Model", model);
 
 		glBindVertexArray(cubeVAO);
