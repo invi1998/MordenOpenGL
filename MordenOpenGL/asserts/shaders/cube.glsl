@@ -17,7 +17,7 @@ void main()
 
 	FragPos = vec3(u_Model * vec4(a_Pos, 1.0f));
 
-	Normal = a_Normal;
+	Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
 
 	gl_Position = u_Projection * u_View * vec4(FragPos, 1.0f);
 }
@@ -32,6 +32,7 @@ in vec3 FragPos;
 out vec4 FragColor;
 
 uniform vec3 u_LightPos;	// 光照位置
+uniform vec3 u_ViewPos;		// 光照位置
 uniform vec3 u_LightColor;	// 光照颜色
 uniform vec3 u_ObjectColor;	// 物体颜色
 
@@ -50,7 +51,14 @@ void main()
 	// 同时确保这个点乘值取大于0的值，因为小于0表示的光照是没有意义的
 	vec3 diffuse = diff * u_LightColor;
 
-	vec3 result = (ambient + diffuse) * u_ObjectColor;
+	// 镜面光照
+	float specularStrength = 0.5f;
+	vec3 viewDir = normalize(u_ViewPos - FragPos);
+	vec3 reflectDir = reflect(-lightDir, norm);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32);
+	vec3 specular = specularStrength * spec * u_LightColor;
+
+	vec3 result = (ambient + diffuse + specular) * u_ObjectColor;
 	FragColor = vec4(result, 1.0f);
 
 }
