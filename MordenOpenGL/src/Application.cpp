@@ -199,7 +199,7 @@ int main(void)
 		lightShader.SetMat4("u_Model", model);
 
 		// 渲染立方体
-		glBindVertexArray(cubeVAO);
+		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		cubeShader.Use();
@@ -211,6 +211,8 @@ int main(void)
 		model = glm::scale(model, glm::vec3(0.2f));
 		cubeShader.SetMat4("u_Model", model);
 
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
