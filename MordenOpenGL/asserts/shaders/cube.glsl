@@ -52,11 +52,17 @@ void main()
 	vec3 diffuse = diff * u_LightColor;
 
 	// 镜面光照
-	float specularStrength = 0.5f;
-	vec3 viewDir = normalize(u_ViewPos - FragPos);
-	vec3 reflectDir = reflect(-lightDir, norm);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32);
-	vec3 specular = specularStrength * spec * u_LightColor;
+	float specularStrength = 0.8f;	// 镜面光照强度
+	vec3 viewDir = normalize(u_ViewPos - FragPos);	// 视线方向向量
+	vec3 reflectDir = reflect(-lightDir, norm);		// 沿着法线轴的反射向量
+	// 需要注意的是我们对lightDir向量进行了取反。
+	// reflect函数要求第一个向量是从光源指向片段位置的向量，但是lightDir当前正好相反，是从片段指向光源（由先前我们计算lightDir向量时，减法的顺序决定）。
+	// 为了保证我们得到正确的reflect向量，我们通过对lightDir向量取反来获得相反的方向。第二个参数要求是一个法向量，所以我们提供的是已标准化的norm向量。
+	
+	// 计算镜面分量
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32);	// 我们先计算视线方向与反射方向的点乘（并确保它不是负值），然后取它的32次幂。这个32是高光的反光度(Shininess)。
+	// 一个物体的反光度越高，反射光的能力越强，散射得越少，高光点就会越小。
+	vec3 specular = specularStrength * spec * u_LightColor; // 最后一件事情是把它加到环境光分量和漫反射分量里，再用结果乘以物体的颜色
 
 	vec3 result = (ambient + diffuse + specular) * u_ObjectColor;
 	FragColor = vec4(result, 1.0f);

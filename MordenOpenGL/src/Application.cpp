@@ -186,6 +186,8 @@ int main(void)
 		cubeShader.Use();
 		cubeShader.SetVec3("u_ObjectColor", glm::vec3{1.0f, 0.5f, 0.21f});
 		cubeShader.SetVec3("u_LightColor", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+		lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
 		cubeShader.SetVec3("u_LightPos", lightPos);
 		cubeShader.SetVec3("u_ViewPos", camera.GetPosition());
 
