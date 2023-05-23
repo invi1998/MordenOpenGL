@@ -22,7 +22,7 @@ float lastFrame = 0.0f;
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
-Camera camera(glm::vec3{ 0.0f, 0.0f, 200.0f });
+Camera camera;
 bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -67,7 +67,7 @@ int main(void)
 	// 注册窗口resize时的回调函数
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	glfwSetCursorPosCallback(window, mouse_callbak);
+	// glfwSetCursorPosCallback(window, mouse_callbak);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -190,8 +190,7 @@ int main(void)
 		cubeShader.SetVec3("u_ViewPos", camera.GetPosition());
 
 		// view/projection transformations
-		glm::mat4 projection{ 1.0f };
-		projection = glm::perspective(glm::radians(camera.GetZoom()), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 10000.0f);
+		glm::mat4 projection = camera.GetProjection();
 		glm::mat4 view{ 1.0f };
 		view = camera.GetViewMatrix();
 		cubeShader.SetMat4("u_Projection", projection);
@@ -199,7 +198,6 @@ int main(void)
 
 		// world transformation
 		glm::mat4 model{ 1.0f };
-		model = glm::rotate(model, 15.0f, glm::vec3(1.0f));
 		cubeShader.SetMat4("u_Model", model);
 
 		glBindVertexArray(cubeVAO);
@@ -240,31 +238,19 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	SCR_WIDTH = width;
 	SCR_HEIGHT = height;
 	glViewport(0, 0, width, height);
+	camera.SetViewportSize(width, height);
 }
 
 void processInput(GLFWwindow* window)
 {
-	float cameraSpeed = static_cast<float>(2.5 * deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	else
 	{
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-	{
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-	{
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	}
-		
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-	{
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+		// 摄像机
+		camera.OnUpdate(window, deltaTime);
 	}
 }
 
@@ -290,7 +276,7 @@ void mouse_callbak(GLFWwindow* window, double xposIn, double yposIn)
 		lastX = xpos;
 		lastY = ypos;
 
-		camera.ProcessMouseMovement(xoffset, yoffset);
+		// camera.ProcessMouseMovement(xoffset, yoffset);
 	}
 
 	
@@ -301,5 +287,6 @@ void mouse_callbak(GLFWwindow* window, double xposIn, double yposIn)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.ProcessMouseScroll(static_cast<float>(yoffset));
+	// camera.ProcessMouseScroll(static_cast<float>(yoffset));
+	camera.OnMouseScroll(xoffset, yoffset);
 }

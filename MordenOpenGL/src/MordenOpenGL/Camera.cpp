@@ -1,98 +1,144 @@
 #include "hzpch.h"
+
 #include "Camera.h"
 
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-	: front_(glm::vec3(0.0f, 0.0f, -1.0f)), camera_speed_(SPEED), sensitivity_(SENSITIVITY), zoom_(ZOOM)
+#include <GLFW/glfw3.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+
+
+Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip)
+	: m_FOV(fov),
+	  m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), m_ViewMatrix(),
+	  m_Projection(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
 {
-	position_ = position;
-	world_up_ = up;
-	yaw_ = yaw;
-	pitch_ = pitch;
-	UpdateCameraVectors_();
+	UpdateView();
 }
 
-Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
-	: front_(glm::vec3(0.0f, 0.0f, -1.0f)), camera_speed_(SPEED), sensitivity_(SENSITIVITY), zoom_(ZOOM)
+void Camera::OnUpdate(GLFWwindow* window, float ts)
 {
-	position_ = glm::vec3(posX, posY, posZ);
-	world_up_ = glm::vec3(upX, upY, upZ);
-	yaw_ = yaw;
-	pitch_ = pitch;
-	UpdateCameraVectors_();
-}
-
-glm::mat4 Camera::GetViewMatrix() const
-{
-	return glm::lookAt(position_, position_ + front_, up_);
-}
-
-void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
-{
-	float velocity = camera_speed_ * deltaTime;
-
-	switch (direction)
+	if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
 	{
-	case FORWARD:
-		position_ += front_ * velocity * 100.0f;
-		break;
-	case BACKWARD:
-		position_ -= front_ * velocity * 100.0f;
-		break;
-	case LEFT:
-		position_ -= right_ * velocity;
-		break;
-	case RIGHT:
-		position_ += right_ * velocity;
-		break;
-	default:
-		break;
+		double x = 0;
+		double y = 0;
+		glfwGetCursorPos(window, &x, &y);
+		const glm::vec2& mouse = glm::vec2{ static_cast<float>(x), static_cast<float>(y) };
+		glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+		m_InitialMousePosition = mouse;
 
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+		{
+			MousePan(delta);
+		}
+		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		{
+			MouseRotate(delta);
+		}
+		else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+		{
+			MouseZoom(delta.y);
+		}
+
+		UpdateView();
 	}
 }
 
-void Camera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch)
+glm::vec3 Camera::GetUpDirection() const
 {
-	xoffset *= sensitivity_;
-	yoffset *= sensitivity_;
+	return glm::rotate(GetOrientation(), glm::vec3{ 1.0f, 1.0f, 0.0f });
+}
 
-	yaw_ += xoffset;
-	pitch_ += yoffset;
+glm::vec3 Camera::GetRightDirection() const
+{
+	return glm::rotate(GetOrientation(), glm::vec3{ 1.0f, 0.0f, 0.0f });
+}
 
-	if (constrainPitch)
+glm::vec3 Camera::GetForwardDirection() const
+{
+	return glm::rotate(GetOrientation(), glm::vec3{ 0.0f, 0.0f, -1.0f });
+}
+
+glm::quat Camera::GetOrientation() const
+{
+	return glm::quat(glm::vec3{ -m_Pitch, -m_Yaw, 0.0f });
+}
+
+void Camera::UpdateProjection()
+{
+	m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
+	m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
+}
+
+void Camera::UpdateView()
+{
+	// m_Yaw = m_Pitch = 0.0f; // 锁定相机旋转
+	m_Position = CalculatePosition();
+
+	glm::quat orientation = GetOrientation();
+	m_ViewMatrix = glm::translate(glm::mat4{ 1.0f }, m_Position) * glm::toMat4(orientation);
+	m_ViewMatrix = glm::inverse(m_ViewMatrix);
+}
+
+void Camera::OnMouseScroll(float xOffset, float yOffset)
+{
+	float delta = yOffset * 0.1f;
+	MouseZoom(delta);
+	UpdateView();
+}
+
+void Camera::MousePan(const glm::vec2& delta)
+{
+	auto [xSpeed, ySpeed] = PanSpeed();
+	m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
+	m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+}
+
+void Camera::MouseRotate(const glm::vec2& delta)
+{
+	float yawSign = GetUpDirection().y < 0 ? -1 : 1.0f;
+	m_Yaw += yawSign * delta.x * RotationSpeed();
+	m_Pitch += delta.y * RotationSpeed();
+}
+
+void Camera::MouseZoom(float delta)
+{
+	m_Distance -= delta * ZoomSpeed();
+	if (m_Distance < 1.0f)
 	{
-		if (pitch_ > 89.0f)
-		{
-			pitch_ = 89.0f;
-		}
-		if (pitch_ < -89.0f)
-		{
-			pitch_ = -89.0f;
-		}
+		m_FocalPoint += GetForwardDirection();
+		m_Distance = 1.0f;
 	}
-	UpdateCameraVectors_();
 }
 
-void Camera::ProcessMouseScroll(float yoffset)
+glm::vec3 Camera::CalculatePosition() const
 {
-	zoom_ -= (float)yoffset;
-	if (zoom_ < 1.0f)
-		zoom_ = 1.0f;
-	if (zoom_ > 45.0f)
-		zoom_ = 45.0f;
+	return m_FocalPoint - GetForwardDirection() * m_Distance;
 }
 
-void Camera::UpdateCameraVectors_()
+std::pair<float, float> Camera::PanSpeed() const
 {
-	// calculate the new Front vector
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw_)) * cos(glm::radians(pitch_));
-	front.y = sin(glm::radians(pitch_));
-	front.z = sin(glm::radians(yaw_)) * cos(glm::radians(pitch_));
-	front_ = glm::normalize(front);
-	// also re-calculate the Right and Up vector
-	right_ = glm::normalize(glm::cross(front_, world_up_));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
-	up_ = glm::normalize(glm::cross(right_, front_));
+	float x = std::min(m_ViewportWidth / 1000.0f, 2.4f);	// max = 2.4f
+	float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
+
+	float y = std::min(m_ViewportHeight / 1000.0f, 2.4f);	// max = 2.4f
+	float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
+
+	return { xFactor, yFactor };
+}
+
+float Camera::RotationSpeed() const
+{
+	return 0.8f;
+}
+
+float Camera::ZoomSpeed() const
+{
+	float distance = m_Distance * 0.2f;
+	distance = std::max(distance, 0.0f);
+	float speed = distance * distance;
+	speed = std::min(speed, 100.0f); // max speed = 100
+	return speed;
 }

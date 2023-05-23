@@ -1,9 +1,9 @@
 #pragma once
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 
-#include <glm/gtc/matrix_transform.hpp>
+#include "GLFW/glfw3.h"
+#include "glm/gtx/quaternion.hpp"
 
 // 定义了多种摄像机移动的可能选项。用作抽象来避免与特定于窗口系统的输入方法产生关联
 enum Camera_Movement {
@@ -13,46 +13,69 @@ enum Camera_Movement {
     RIGHT
 };
 
-// Default camera values
-const float YAW = -90.0f;
-const float PITCH = 0.0f;
-const float SPEED = 2.5f;
-const float SENSITIVITY = 0.01f;
-const float ZOOM = 45.0f;
-
 class Camera
 {
 public:
-    Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
+    Camera() = default;
+    Camera(float fov, float aspectRatio, float nearClip, float farClip);
 
-    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
+    void OnUpdate(GLFWwindow* window, float ts);
 
-    glm::mat4 GetViewMatrix() const;
+    float GetDistance() const { return m_Distance; }
+    void SetDistance(float distance) { m_Distance = distance; }
+    void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
 
-    void ProcessKeyboard(Camera_Movement direction, float deltaTime);
+    const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
+    const glm::mat4& GetProjection() const { return m_Projection; }
+    glm::mat4 GetViewProjection() const { return m_Projection * m_ViewMatrix; }
 
-    void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
+    glm::vec3 GetUpDirection() const;
+    glm::vec3 GetRightDirection() const;
+    glm::vec3 GetForwardDirection() const;
 
-    void ProcessMouseScroll(float yoffset);
+    const glm::vec3& GetPosition() const { return m_Position; }
+    glm::quat GetOrientation() const;
 
-public:
-    float GetZoom() const { return zoom_; }
-    glm::vec3 GetPosition() const { return position_; }
+    float GetPith() const { return m_Pitch; }
+    float GetYaw() const { return m_Yaw; }
+
+    void OnMouseScroll(float xOffset, float yOffset);
 
 private:
-    void UpdateCameraVectors_();
+    void UpdateProjection();
+    void UpdateView();
+
+    void MousePan(const glm::vec2& delta);
+    void MouseRotate(const glm::vec2& delta);
+    void MouseZoom(float delta);
+
+    glm::vec3 CalculatePosition() const;
+
+    std::pair<float, float> PanSpeed() const;
+    float RotationSpeed() const;
+    float ZoomSpeed() const;
+	
 
 private:
-    glm::vec3 position_;
-    glm::vec3 front_;
-    glm::vec3 up_;
-    glm::vec3 right_;
-    glm::vec3 world_up_;
-    float yaw_;
-    float pitch_;
-    float camera_speed_;
-    float sensitivity_;
-    float zoom_;
+    float m_FOV = 45.0f;
+    float m_AspectRatio = 1.3333f;
+    float m_NearClip = 0.1f;
+    float m_FarClip = 1000.0f;
+
+    glm::mat4 m_ViewMatrix;
+    glm::mat4 m_Projection{ 1.0f };
+    glm::vec3 m_Position{ 0.0f, 0.0f, 0.0f };
+    glm::vec3 m_FocalPoint{ 0.0f, 0.0f, 0.0f };
+
+    glm::vec2 m_InitialMousePosition{ 0.0f, 0.0f };
+
+    float m_Distance = 10.0f;
+    float m_Pitch = 0.0f;
+    float m_Yaw = 0.0f;
+
+    float m_ViewportWidth = 800.0f;
+    float m_ViewportHeight = 600.0f;
+
 
 };
 
