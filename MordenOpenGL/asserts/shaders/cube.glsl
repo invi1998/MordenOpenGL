@@ -1,11 +1,13 @@
 #type vertex
 #version 330 core
 
-layout (location = 0) in vec3 a_Pos;
-layout (location = 1) in vec3 a_Normal;
+layout (location = 0) in vec3 a_Pos;		// 顶点位置
+layout (location = 1) in vec3 a_Normal;		// 顶点法线
+layout (location = 2) in vec2 a_TexCoords;		// 纹理坐标
 
 out vec3 FragPos;
 out vec3 Normal;
+out vec2 TexCoords;
 
 // uniform mat4 u_Transform;
 uniform mat4 u_Model;
@@ -25,6 +27,8 @@ void main()
 	// 注意我们还要把被处理过的矩阵强制转换为3×3矩阵，来保证它失去了位移属性以及能够乘以vec3的法向量。
 	Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
 
+	TexCoords = a_TexCoords;
+
 	gl_Position = u_Projection * u_View * vec4(FragPos, 1.0f);
 }
 
@@ -33,12 +37,20 @@ void main()
 #version 330 core
 
 // 材质属性
+//struct Material
+//{
+//	vec3 ambient;		// 环境光照
+//	vec3 diffuse;		// 漫反射光照
+//	vec3 specular;		// 镜面光照
+//	float shininess;	// 反光度
+//};
+
+// 纹理贴图材质属性
 struct Material
 {
-	vec3 ambient;		// 环境光照
-	vec3 diffuse;		// 漫反射光照
-	vec3 specular;		// 镜面光照
-	float shininess;	// 反光度
+	sampler2D diffuse;		// 漫反射贴图
+	sampler2D specular;		// 镜面反射贴图
+	float shininess;		// 反光度
 };
 
 // 光照属性
@@ -53,6 +65,7 @@ struct Light
 
 in vec3 Normal;
 in vec3 FragPos;
+in vec2 TexCoords;
 
 out vec4 FragColor;
 
@@ -63,8 +76,9 @@ uniform Light u_Light;			// 光照
 
 void main()
 {
+
 	// 环境光
-    vec3 ambient = u_Light.ambient * u_Material.ambient;
+    vec3 ambient = u_Light.ambient * texture(u_Material.diffuse, TexCoords).rgb;
 
 	// 漫反射
 	vec3 norm = normalize(Normal);						// 向量归一化
@@ -73,7 +87,7 @@ void main()
 	// 当计算光照时我们通常不关心一个向量的模长或它的位置，我们只关心它们的方向。所以，几乎所有的计算都使用单位向量完成，因为这简化了大部分的计算（比如点乘）。
 	// 所以当进行光照计算时，确保你总是对相关向量进行标准化，来保证它们是真正地单位向量。忘记对向量进行标准化是一个十分常见的错误。
 	// 同时确保这个点乘值取大于0的值，因为小于0表示的光照是没有意义的
-	vec3 diffuse = u_Light.diffuse * (diff*u_Material.diffuse);
+	vec3 diffuse = u_Light.diffuse * diff * texture(u_Material.diffuse, TexCoords).rgb;		// 这里对于实际贴图渲染的漫反射和环境光的渲染，因为环境光颜色在几乎所有情况下都等于漫反射颜色，所以这里使用同一个属性进行计算
 
 	// 镜面光照
 	vec3 viewDir = normalize(u_ViewPos - FragPos);	// 视线方向向量
@@ -81,13 +95,14 @@ void main()
 	// 需要注意的是我们对lightDir向量进行了取反。
 	// reflect函数要求第一个向量是从光源指向片段位置的向量，但是lightDir当前正好相反，是从片段指向光源（由先前我们计算lightDir向量时，减法的顺序决定）。
 	// 为了保证我们得到正确的reflect向量，我们通过对lightDir向量取反来获得相反的方向。第二个参数要求是一个法向量，所以我们提供的是已标准化的norm向量。
-	
 	// 计算镜面分量
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), u_Material.shininess);	// 我们先计算视线方向与反射方向的点乘（并确保它不是负值），然后取它的32次幂。这个32是高光的反光度(Shininess)。
 	// 一个物体的反光度越高，反射光的能力越强，散射得越少，高光点就会越小。
-	vec3 specular = u_Light.specular * (spec * u_Material.specular); // 最后一件事情是把它加到环境光分量和漫反射分量里，再用结果乘以物体的颜色
+	vec3 specular = u_Light.specular * spec * texture(u_Material.specular, TexCoords).rgb; // 最后一件事情是把它加到环境光分量和漫反射分量里，再用结果乘以物体的颜色
 
 	vec3 result = ambient + diffuse + specular;
 	FragColor = vec4(result, 1.0f);
+
+	// FragColor = texture(u_Material.specular, TexCoords);
 
 }
