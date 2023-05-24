@@ -61,6 +61,10 @@ struct Light
 	vec3 ambient;		// 环境光照强度
 	vec3 diffuse;		// 漫反射光照强度
 	vec3 specular;		// 镜面光照强度
+
+	float constant;		// 常数项
+    float linear;		// 一次项
+    float quadratic;	// 二次项
 };
 
 in vec3 Normal;
@@ -76,6 +80,10 @@ uniform Light u_Light;			// 光照
 
 void main()
 {
+	// 光源和顶点的距离
+	float distances = length(u_Light.position - FragPos);
+	// 光线衰减值
+	float attenuation = 1.0f / (u_Light.constant + u_Light.linear * distances + u_Light.quadratic * (distances * distances));
 
 	// 环境光
     vec3 ambient = u_Light.ambient * texture(u_Material.diffuse, TexCoords).rgb;
@@ -99,6 +107,11 @@ void main()
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0f), u_Material.shininess);	// 我们先计算视线方向与反射方向的点乘（并确保它不是负值），然后取它的32次幂。这个32是高光的反光度(Shininess)。
 	// 一个物体的反光度越高，反射光的能力越强，散射得越少，高光点就会越小。
 	vec3 specular = u_Light.specular * spec * texture(u_Material.specular, TexCoords).rgb; // 最后一件事情是把它加到环境光分量和漫反射分量里，再用结果乘以物体的颜色
+
+	// 光线计算加上距离衰减值
+	ambient  *= attenuation; 
+	diffuse  *= attenuation;
+	specular *= attenuation;
 
 	vec3 result = ambient + diffuse + specular;
 	FragColor = vec4(result, 1.0f);

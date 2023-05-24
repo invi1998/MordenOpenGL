@@ -137,6 +137,19 @@ int main(void)
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
 	};
 
+	glm::vec3 cubePositions[] = {
+	   glm::vec3(0.0f,  0.0f,  0.0f),
+	   glm::vec3(2.0f,  5.0f, -15.0f),
+	   glm::vec3(-1.5f, -2.2f, -2.5f),
+	   glm::vec3(-3.8f, -2.0f, -12.3f),
+	   glm::vec3(2.4f, -0.4f, -3.5f),
+	   glm::vec3(-1.7f,  3.0f, -7.5f),
+	   glm::vec3(1.3f, -2.0f, -2.5f),
+	   glm::vec3(1.5f,  2.0f, -2.5f),
+	   glm::vec3(1.5f,  0.2f, -1.5f),
+	   glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	uint32_t VBO, cubeVAO;
 
 	// 创建顶点数组对象，顶点缓冲对象，元素缓冲对象
@@ -216,6 +229,9 @@ int main(void)
 		cubeShader.SetVec3("u_Light.ambient", ambientColor);
 		cubeShader.SetVec3("u_Light.diffuse", diffuseColor);
 		cubeShader.SetVec3("u_Light.specular", glm::vec3{1.0f, 1.0f, 1.0f});
+		cubeShader.SetFloat("u_Light.constant", 1.0f);
+		cubeShader.SetFloat("u_Light.linear", 0.09f);
+		cubeShader.SetFloat("u_Light.quadratic", 0.032f);
 		// 材质属性
 		// cubeShader.SetVec3("u_Material.ambient", glm::vec3{ 0.8, 0.64, 0.21 });
 		// cubeShader.SetVec3("u_Material.diffuse", glm::vec3{ 0.8, 0.64, 0.21 });
@@ -228,7 +244,7 @@ int main(void)
 		cubeShader.SetMat4("u_View", view);
 		// 世界变换
 		glm::mat4 model{ 1.0f };
-		cubeShader.SetMat4("u_Model", model);
+		
 
 		glEnable(GL_BLEND);
 
@@ -241,7 +257,17 @@ int main(void)
 
 		// 渲染立方体
 		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (unsigned int i = 0; i < 10; i++)
+		{
+			// calculate the model matrix for each object and pass it to shader before drawing
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			cubeShader.SetMat4("u_Model", model);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		lightShader.Use();
 		lightShader.SetVec3("u_LightColor", lightColor);
