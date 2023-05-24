@@ -182,39 +182,54 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
-		// 渲染立方体
-		cubeShader.Use();
-		cubeShader.SetVec3("u_ObjectColor", glm::vec3{1.0f, 0.5f, 0.21f});
-		cubeShader.SetVec3("u_LightColor", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		// 光源
+		glm::vec3 lightColor{ 1.0f };
+		lightColor.x = static_cast<float>(sin(glfwGetTime() * 2.4f));
+		lightColor.y = static_cast<float>(sin(glfwGetTime() * 0.8f));
+		lightColor.z = static_cast<float>(sin(glfwGetTime() * 1.5f));
+
+		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);		// 漫反射光 0.5倍的光强
+		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);	// 环境光，0.2倍的漫反射光强
+
 		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
 		lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
-		cubeShader.SetVec3("u_LightPos", lightPos);
-		cubeShader.SetVec3("u_ViewPos", camera.GetPosition());
 
-		// view/projection transformations
+		cubeShader.Use();
+		// 光照属性
+		cubeShader.SetVec3("u_Light.position", lightPos);
+		cubeShader.SetVec3("u_ViewPos", camera.GetPosition());
+		cubeShader.SetVec3("u_Light.ambient", ambientColor);
+		cubeShader.SetVec3("u_Light.diffuse", diffuseColor);
+		cubeShader.SetVec3("u_Light.specular", glm::vec3{1.0f, 1.0f, 1.0f});
+		// 材质属性
+		cubeShader.SetVec3("u_Material.ambient", glm::vec3{ 0.8, 0.64, 0.21 });
+		cubeShader.SetVec3("u_Material.diffuse", glm::vec3{ 0.8, 0.64, 0.21 });
+		cubeShader.SetVec3("u_Material.specular", glm::vec3{ 0.5, 0.5, 0.5 });
+		cubeShader.SetFloat("u_Material.shininess", 32.0f);
+		// 视图和透视投影
 		glm::mat4 projection = camera.GetProjection();
-		glm::mat4 view{ 1.0f };
-		view = camera.GetViewMatrix();
+		glm::mat4 view = camera.GetViewMatrix();
 		cubeShader.SetMat4("u_Projection", projection);
 		cubeShader.SetMat4("u_View", view);
-
-		// world transformation
+		// 世界变换
 		glm::mat4 model{ 1.0f };
 		cubeShader.SetMat4("u_Model", model);
 
+		// 渲染立方体
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// 渲染光源
 		lightShader.Use();
+		lightShader.SetVec3("u_LightColor", lightColor);
 		lightShader.SetMat4("u_Projection", projection);
 		lightShader.SetMat4("u_View", view);
-
-		model = glm::mat4(1.0f);
+		// 世界变换
+		model = glm::mat4{ 1.0f };
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
+		model = glm::scale(model, glm::vec3{0.2f});
 		lightShader.SetMat4("u_Model", model);
 
+		// 渲染立方体
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
