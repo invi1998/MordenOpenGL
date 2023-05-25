@@ -2,3 +2,6 @@
 	path = MordenOpenGL/vendor/GLFW
 	url = https://github.com/invi1998/glfw.git
 	branch = master
+[submodule "MordenOpenGL/vendor/assimp"]
+	path = MordenOpenGL/vendor/assimp
+	url = https://github.com/invi1998/assimp
