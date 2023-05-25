@@ -227,6 +227,7 @@ int main(void)
 		cubeShader.SetVec3("u_Light.position", lightPos);
 		cubeShader.SetVec3("u_Light.direction", camera.GetForwardDirection());
 		cubeShader.SetFloat("u_Light.cutOff", glm::cos(glm::radians(12.5f)));
+		cubeShader.SetFloat("u_Light.outerCutOff", glm::cos(glm::radians(17.5f)));
 		cubeShader.SetVec3("u_ViewPos", camera.GetPosition());
 		cubeShader.SetVec3("u_Light.ambient", ambientColor);
 		cubeShader.SetVec3("u_Light.diffuse", diffuseColor);
