@@ -150,6 +150,22 @@ int main(void)
 	   glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
+	// 点光源位置
+	glm::vec3 pointLightPositions[] = {
+		glm::vec3(0.7f,  0.2f,  2.0f),
+		glm::vec3(2.3f, -3.3f, -4.0f),
+		glm::vec3(-4.0f,  2.0f, -12.0f),
+		glm::vec3(0.0f,  0.0f, -3.0f)
+	};
+
+	// 点光源颜色
+	glm::vec3 pointLightColor[] = {
+		glm::vec3(0.7f,  0.2f,  1.0f),
+		glm::vec3(0.3f, 0.3f, 0.8f),
+		glm::vec3(0.9f,  0.3f, 0.125f),
+		glm::vec3(0.2f,  0.9f, 0.32f)
+	};
+
 	uint32_t VBO, cubeVAO;
 
 	// 创建顶点数组对象，顶点缓冲对象，元素缓冲对象
@@ -219,8 +235,8 @@ int main(void)
 		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
 		glm::vec3 ambientColor = lightColor * glm::vec3(0.2f);
 
-		lightPos.x = 1.0f + sin(glfwGetTime()) * 1.0f;
-		lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
+		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+		lightPos.y = sin(glfwGetTime() / 2.0f) * 3.0f;
 
 		cubeShader.Use();
 		// 光照属性
@@ -235,6 +251,62 @@ int main(void)
 		cubeShader.SetFloat("u_Light.constant", 1.0f);
 		cubeShader.SetFloat("u_Light.linear", 0.09f);
 		cubeShader.SetFloat("u_Light.quadratic", 0.032f);
+
+
+		// directional light
+		cubeShader.SetVec3("u_DirLight.direction", lightPos);
+		cubeShader.SetVec3("u_DirLight.ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
+		cubeShader.SetVec3("u_DirLight.diffuse", glm::vec3{ 0.4f, 0.4f, 0.4f });
+		cubeShader.SetVec3("u_DirLight.specular", glm::vec3{0.5f, 0.5f, 0.5f});
+		// point light 1
+		cubeShader.SetVec3("u_PointLights[0].position", pointLightPositions[0]);
+		cubeShader.SetVec3("u_PointLights[0].lightColor", pointLightColor[0]);
+		cubeShader.SetVec3("u_PointLights[0].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
+		cubeShader.SetVec3("u_PointLights[0].diffuse",glm::vec3{ 0.8f, 0.8f, 0.8f });
+		cubeShader.SetVec3("u_PointLights[0].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		cubeShader.SetFloat("u_PointLights[0].constant", 1.0f);
+		cubeShader.SetFloat("u_PointLights[0].linear", 0.09f);
+		cubeShader.SetFloat("u_PointLights[0].quadratic", 0.032f);
+		// point light 2
+		cubeShader.SetVec3("u_PointLights[1].position", pointLightPositions[1]);
+		cubeShader.SetVec3("u_PointLights[1].lightColor", pointLightColor[1]);
+		cubeShader.SetVec3("u_PointLights[1].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
+		cubeShader.SetVec3("u_PointLights[1].diffuse", glm::vec3{ 0.8f, 0.8f, 0.8f });
+		cubeShader.SetVec3("u_PointLights[1].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		cubeShader.SetFloat("u_PointLights[1].constant", 1.0f);
+		cubeShader.SetFloat("u_PointLights[1].linear", 0.09f);
+		cubeShader.SetFloat("u_PointLights[1].quadratic", 0.032f);
+		// point light 3
+		cubeShader.SetVec3("u_PointLights[2].position", pointLightPositions[2]);
+		cubeShader.SetVec3("u_PointLights[2].lightColor", pointLightColor[2]);
+		cubeShader.SetVec3("u_PointLights[2].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
+		cubeShader.SetVec3("u_PointLights[2].diffuse", glm::vec3{ 0.8f, 0.8f, 0.8f });
+		cubeShader.SetVec3("u_PointLights[2].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		cubeShader.SetFloat("u_PointLights[2].constant", 1.0f);
+		cubeShader.SetFloat("u_PointLights[2].linear", 0.09f);
+		cubeShader.SetFloat("u_PointLights[2].quadratic", 0.032f);
+		// point light 4
+		cubeShader.SetVec3("u_PointLights[3].position", pointLightPositions[3]);
+		cubeShader.SetVec3("u_PointLights[3].lightColor", pointLightColor[3]);
+		cubeShader.SetVec3("u_PointLights[3].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
+		cubeShader.SetVec3("u_PointLights[3].diffuse", glm::vec3{ 0.8f, 0.8f, 0.8f });
+		cubeShader.SetVec3("u_PointLights[3].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		cubeShader.SetFloat("u_PointLights[3].constant", 1.0f);
+		cubeShader.SetFloat("u_PointLights[3].linear", 0.09f);
+		cubeShader.SetFloat("u_PointLights[3].quadratic", 0.032f);
+		// spotLight
+		cubeShader.SetVec3("u_SpotLight.position", camera.GetPosition());
+		cubeShader.SetVec3("u_SpotLight.direction", camera.GetForwardDirection());
+		cubeShader.SetVec3("u_SpotLight.ambient", ambientColor);
+		cubeShader.SetVec3("u_SpotLight.diffuse", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		cubeShader.SetVec3("u_SpotLight.specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
+		cubeShader.SetFloat("u_SpotLight.constant", 1.0f);
+		cubeShader.SetFloat("u_SpotLight.linear", 0.09f);
+		cubeShader.SetFloat("u_SpotLight.quadratic", 0.032f);
+		cubeShader.SetFloat("u_SpotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		cubeShader.SetFloat("u_SpotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
+
 		// 材质属性
 		// cubeShader.SetVec3("u_Material.ambient", glm::vec3{ 0.8, 0.64, 0.21 });
 		// cubeShader.SetVec3("u_Material.diffuse", glm::vec3{ 0.8, 0.64, 0.21 });
@@ -276,15 +348,27 @@ int main(void)
 		lightShader.SetVec3("u_LightColor", lightColor);
 		lightShader.SetMat4("u_Projection", projection);
 		lightShader.SetMat4("u_View", view);
-		// 世界变换
-		model = glm::mat4{ 1.0f };
+
+		glBindVertexArray(lightVAO);
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3{0.2f});
+		model = glm::scale(model, glm::vec3(0.1f)); // Make it a smaller cube
 		lightShader.SetMat4("u_Model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// 渲染立方体
 		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (uint32_t i = 0; i < 4; i++)
+		{
+			// 世界坐标变换
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, pointLightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+			lightShader.SetMat4("u_Model", model);
+			lightShader.SetVec3("u_LightColor", pointLightColor[i]);
+			
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
