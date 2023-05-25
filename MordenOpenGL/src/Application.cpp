@@ -14,6 +14,10 @@
 
 #include "MordenOpenGL/Texture.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 static uint32_t SCR_WIDTH = 800;
 static uint32_t SCR_HEIGHT = 600;
 

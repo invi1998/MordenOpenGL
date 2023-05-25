@@ -34,13 +34,15 @@ project "MordenOpenGL"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.glm}",
+		"%{IncludeDir.assimp}",
 	}
 
 	links
 	{
 		"GLFW",
 		"Glad",
-		"opengl32.lib"
+		"opengl32.lib",
+		"assimp"
 	}
 
 	filter "system:windows"
