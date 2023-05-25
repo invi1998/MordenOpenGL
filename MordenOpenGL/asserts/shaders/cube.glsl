@@ -58,6 +58,9 @@ struct Light
 {
 	vec3 position;		// 光源位置
 
+	vec3 direction;		// 光照方向（开启这个属性，表示是点光源，聚光）
+	float cutOff;		// 聚光的切光角
+
 	vec3 ambient;		// 环境光照强度
 	vec3 diffuse;		// 漫反射光照强度
 	vec3 specular;		// 镜面光照强度
@@ -113,7 +116,21 @@ void main()
 	diffuse  *= attenuation;
 	specular *= attenuation;
 
-	vec3 result = ambient + diffuse + specular;
+	float theta = dot(lightDir, normalize(-u_Light.direction));
+
+	vec3 result = vec3(0.0f);
+
+	if (theta > u_Light.cutOff)
+	{
+		// 执行光照计算
+		result = ambient + diffuse + specular;
+	}
+	else
+	{
+		result = ambient;
+	}
+
+	
 	FragColor = vec4(result, 1.0f);
 
 	// FragColor = texture(u_Material.specular, TexCoords);
