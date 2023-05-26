@@ -23,6 +23,8 @@ public:
 
 	inline const TEXTURE_TYPE GetType() const { return m_Type; }
 
+	std::string GetFilePath() const { return m_FilePath; }
+
 private:
 	TEXTURE_TYPE m_Type;
 	uint32_t m_RendererID;
