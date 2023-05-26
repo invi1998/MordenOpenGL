@@ -4,7 +4,7 @@
 #include "stb_image.h"
 #include "glad/glad.h"
 
-Texture::Texture(const std::string& filePath):m_FilePath(filePath)
+Texture::Texture(const std::string& filePath, TEXTURE_TYPE type):m_FilePath(filePath), m_Type(type)
 {
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(1);

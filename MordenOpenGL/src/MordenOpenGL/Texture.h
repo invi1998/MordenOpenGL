@@ -1,17 +1,30 @@
 #pragma once
 #include "glad/glad.h"
 
+enum TEXTURE_TYPE
+{
+	DIFFUSE,		// 漫反射贴图
+	SPECULAR,		// 镜面高光贴图
+	NORMAL,			// 法线贴图
+	HEIGHT			// 深度贴图
+};
+
 class Texture
 {
 public:
-	Texture(const std::string& filePath);
+	Texture(const std::string& filePath, TEXTURE_TYPE type);
 	~Texture();
 
 	void Bind(uint32_t slot);
 
 	void SetData(void* data, uint32_t size);
 
+	uint32_t GetRendererID() const { return m_RendererID; }
+
+	inline const TEXTURE_TYPE GetType() const { return m_Type; }
+
 private:
+	TEXTURE_TYPE m_Type;
 	uint32_t m_RendererID;
 	std::string m_FilePath;
 
