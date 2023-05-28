@@ -88,49 +88,70 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 			vector2.y = mesh->mTextureCoords[0][i].y;
 			vertex.TexCoords = vector2;
 			// 切线
-			vector3.x = mesh->mTangents[i].x;
-			vector3.y = mesh->mTangents[i].y;
-			vector3.z = mesh->mTangents[i].z;
-			vertex.Tangent = vector3;
+			if (mesh->mTangents)
+			{
+				vector3.x = mesh->mTangents[i].x;
+				vector3.y = mesh->mTangents[i].y;
+				vector3.z = mesh->mTangents[i].z;
+				vertex.Tangent = vector3;
+			}
+			else
+			{
+				vertex.Tangent = glm::vec3(0.0f);
+			}
 			// 双切线
-			vector3.x = mesh->mBitangents[i].x;
-			vector3.y = mesh->mBitangents[i].y;
-			vector3.z = mesh->mBitangents[i].z;
-			vertex.BiTangent = vector3;
+			if (mesh->mBitangents)
+			{
+				vector3.x = mesh->mBitangents[i].x;
+				vector3.y = mesh->mBitangents[i].y;
+				vector3.z = mesh->mBitangents[i].z;
+				vertex.BiTangent = vector3;
+			}
+			else
+			{
+				vertex.Tangent = glm::vec3(0.0f);
+			}
 		}
 		else
 		{
-			aiFace face = mesh->mFaces[i];
-			// 检索面的所有索引，并将它们存储在索引向量中”
-			for (unsigned int j = 0; j < face.mNumIndices; j++)
-				indices.push_back(face.mIndices[j]);
+			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 		}
 
-		// 处理材质
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		// 我们假设着色器程序中采样器名称的约定。每个漫反射纹理应命名为“texture_diffuseN”，
-		// 其中N是从1到MAX_SAMPLER_NUMBER的连续数字。同样适用于其他纹理，
-		// 下面的列表概括了这一点：
-		// diffuse: texture_diffuseN
-		// specular: texture_specularN
-		// normal: texture_normalN
-
-		// 1:漫反射纹理
-		std::vector<Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, TEXTURE_TYPE::DIFFUSE);
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-		// 2:高光贴图
-		std::vector<Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, TEXTURE_TYPE::SPECULAR);
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-		// 3:法线贴图
-		std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, TEXTURE_TYPE::NORMAL);
-		textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-		// 4:深度贴图
-		std::vector<Texture> heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TEXTURE_TYPE::HEIGHT);
-		textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
-		return Mesh(vertices, indices, textures);
+		vertices.push_back(vertex);
 
 	}
+
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+	{
+		aiFace face = mesh->mFaces[i];
+		// 检索面的所有索引，并将它们存储在索引向量中”
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
+			indices.push_back(face.mIndices[j]);
+	}
+
+	// 处理材质
+	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+	// 我们假设着色器程序中采样器名称的约定。每个漫反射纹理应命名为“texture_diffuseN”，
+	// 其中N是从1到MAX_SAMPLER_NUMBER的连续数字。同样适用于其他纹理，
+	// 下面的列表概括了这一点：
+	// diffuse: texture_diffuseN
+	// specular: texture_specularN
+	// normal: texture_normalN
+
+	// 1:漫反射纹理
+	std::vector<Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, TEXTURE_TYPE::DIFFUSE);
+	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+	// 2:高光贴图
+	std::vector<Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, TEXTURE_TYPE::SPECULAR);
+	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+	// 3:法线贴图
+	std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, TEXTURE_TYPE::NORMAL);
+	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+	// 4:深度贴图
+	std::vector<Texture> heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TEXTURE_TYPE::HEIGHT);
+	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+
+	return Mesh(vertices, indices, textures);
 }
 
 std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, TEXTURE_TYPE typePre)

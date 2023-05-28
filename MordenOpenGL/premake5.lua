@@ -37,12 +37,14 @@ project "MordenOpenGL"
 		"%{IncludeDir.assimp}",
 	}
 
+    libdirs { "vendor/assimp/lib/Debug" }
+
 	links
 	{
 		"GLFW",
 		"Glad",
 		"opengl32.lib",
-		"assimp"
+		"assimp-vc143-mtd.lib"
 	}
 
 	filter "system:windows"
@@ -53,6 +55,12 @@ project "MordenOpenGL"
 			"HZ_PLATFORM_WINDOWS",
 			"HZ_BUILD_DLL"
 		}
+
+		-- Copy dlls to outputdir
+        -- postbuildcommands
+		-- {
+		-- 	("{COPY}/vendor/assimp/bin/Debug/assimp-vc142-mt.dll ../bin/" .. outputdir .. "/MordenOpenGL")
+		-- }
 
 	filter "configurations:Debug"
 		defines "HZ_DEBUG"
