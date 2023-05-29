@@ -175,6 +175,9 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
 	{
 		aiString str;
 		mat->GetTexture(type, i, &str);
+		size_t pos = m_Filepath.find_last_of('/');
+		std::string beforeStr = m_Filepath.substr(0, pos+1);
+		str = beforeStr + str.C_Str();
 		// 检查纹理是否已经加载，如果是，则继续下一次迭代：跳过加载新纹理”
 		bool skip = false;
 		for (unsigned int j = 0; j < m_TextureLoaded.size(); j++)
