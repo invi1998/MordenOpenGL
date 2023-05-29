@@ -28,6 +28,11 @@ Texture::Texture(const std::string& filePath, TEXTURE_TYPE type):m_FilePath(file
 			internalFormat = GL_RGB8;
 			dataFormat = GL_RGB;
 		}
+		else if (channels == 1)
+		{
+			internalFormat = GL_RED;
+			dataFormat = GL_RED;
+		}
 
 		m_InternalFormat = internalFormat;
 		m_DataFormat = dataFormat;

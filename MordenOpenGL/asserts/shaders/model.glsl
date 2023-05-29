@@ -88,8 +88,8 @@ uniform SpotLight u_SpotLight;	// 聚光灯
 
 uniform sampler2D u_DiffuseTexture1;
 uniform sampler2D u_SpecularTexture1;
-uniform sampler2D u_NormalTexture1;
-uniform sampler2D u_HeightTexture1;
+//uniform sampler2D u_NormalTexture1;
+//uniform sampler2D u_HeightTexture1;
 
 // 光照计算函数定义
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
@@ -120,7 +120,8 @@ void main()
 	
 	FragColor = vec4(result, 1.0);
 
-	// FragColor = texture(u_DiffuseTexture2, TexCoords);
+	// FragColor = texture(u_DiffuseTexture1, TexCoords);
+	FragColor = vec4(TexCoords.x, TexCoords.y, 0.0, 1.0);
 	// FragColor = texture(u_DiffuseTexture1, TexCoords) + texture(u_SpecularTexture1, TexCoords) + texture(u_NormalTexture1, TexCoords) + texture(u_HeightTexture1, TexCoords);
 }
 

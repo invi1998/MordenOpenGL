@@ -4,9 +4,9 @@
 Mesh::Mesh(const std::vector<Vertex>& vertics, const std::vector<uint32_t>& indices, std::vector<Texture>& textures)
 	: m_Vertices(vertics), m_Indices(indices), m_Textures(textures)
 {
-	m_Vertices.insert(m_Vertices.end(), vertics.begin(), vertics.end());
+	/*m_Vertices.insert(m_Vertices.end(), vertics.begin(), vertics.end());
 	m_Indices.insert(m_Indices.end(), indices.begin(), indices.end());
-	m_Textures.insert(m_Textures.end(), textures.begin(), textures.end());
+	m_Textures.insert(m_Textures.end(), textures.begin(), textures.end());*/
 
 	SetupMesh();
 }
@@ -35,7 +35,7 @@ void Mesh::Draw(Shader& shader)
 
 	for (uint32_t i = 0; i < m_Textures.size(); i++)
 	{
-		// glActiveTexture(GL_TEXTURE0 + i);
+		glActiveTexture(GL_TEXTURE0 + i);
 
 		std::string name;
 		TEXTURE_TYPE type = m_Textures[i].GetType();
@@ -45,7 +45,6 @@ void Mesh::Draw(Shader& shader)
 		case TEXTURE_TYPE::DIFFUSE:
 		{
 			name = "u_DiffuseTexture" + std::to_string(diffuseNr++);
-			
 		}break;
 		case TEXTURE_TYPE::SPECULAR:
 		{
@@ -63,14 +62,17 @@ void Mesh::Draw(Shader& shader)
 			
 		}break;
 		}
-
+		// std::cout << '[' << glGetUniformLocation(shader.GetRendererID(), name.c_str()) << ']' << name << "---------" << i << std::endl;
 		glUniform1i(glGetUniformLocation(shader.GetRendererID(), name.c_str()), static_cast<GLint>(i));
 		glBindTexture(GL_TEXTURE_2D, m_Textures[i].GetRendererID());
 		// shader.SetInt(name, static_cast<GLint>(i));
 	}
 
+	// std::cout << "--------------------" << std::endl;
+
+	// äÖÈ¾Íø¸ñ
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(m_Indices.size()), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	glActiveTexture(GL_TEXTURE0);
 	// glUseProgram(0);
