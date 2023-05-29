@@ -24,7 +24,7 @@ void Model::LoadModel()
 	Assimp::Importer importer;
 	// 通过设定aiProcess_Triangulate，我们告诉Assimp，如果模型不是（全部）由三角形组成，它需要将模型所有的图元形状变换为三角形。
 	// aiProcess_FlipUVs将在处理的时候翻转y轴的纹理坐标（你可能还记得我们在纹理教程中说过，在OpenGL中大部分的图像的y轴都是反的，所以这个后期处理选项将会修复这个）
-	const aiScene* scene = importer.ReadFile(m_Filepath.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(m_Filepath.c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
@@ -38,7 +38,7 @@ void Model::LoadModel()
 }
 
 
-// 处理节点网络
+// 处理节点网络 以递归方式处理节点。处理位于节点处的每个单独的网格，并在其子节点（如果有）上重复此过程
 void Model::ProcessNode(aiNode* node, const aiScene* scene)
 {
 	// 处理节点所有的网格（如果有的话）
@@ -87,30 +87,43 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 			vector2.x = mesh->mTextureCoords[0][i].x;
 			vector2.y = mesh->mTextureCoords[0][i].y;
 			vertex.TexCoords = vector2;
+
 			// 切线
-			if (mesh->mTangents)
-			{
-				vector3.x = mesh->mTangents[i].x;
-				vector3.y = mesh->mTangents[i].y;
-				vector3.z = mesh->mTangents[i].z;
-				vertex.Tangent = vector3;
-			}
-			else
-			{
-				vertex.Tangent = glm::vec3(0.0f);
-			}
-			// 双切线
-			if (mesh->mBitangents)
-			{
-				vector3.x = mesh->mBitangents[i].x;
-				vector3.y = mesh->mBitangents[i].y;
-				vector3.z = mesh->mBitangents[i].z;
-				vertex.BiTangent = vector3;
-			}
-			else
-			{
-				vertex.Tangent = glm::vec3(0.0f);
-			}
+			vector3.x = mesh->mTangents[i].x;
+			vector3.y = mesh->mTangents[i].y;
+			vector3.z = mesh->mTangents[i].z;
+			vertex.Tangent = vector3;
+
+			// 二重切线
+			vector3.x = mesh->mBitangents[i].x;
+			vector3.y = mesh->mBitangents[i].y;
+			vector3.z = mesh->mBitangents[i].z;
+			vertex.BiTangent = vector3;
+
+			//// 切线
+			//if (mesh->mTangents)
+			//{
+			//	vector3.x = mesh->mTangents[i].x;
+			//	vector3.y = mesh->mTangents[i].y;
+			//	vector3.z = mesh->mTangents[i].z;
+			//	vertex.Tangent = vector3;
+			//}
+			//else
+			//{
+			//	vertex.Tangent = glm::vec3(1.0f);
+			//}
+			//// 二重切线
+			//if (mesh->mBitangents)
+			//{
+			//	vector3.x = mesh->mBitangents[i].x;
+			//	vector3.y = mesh->mBitangents[i].y;
+			//	vector3.z = mesh->mBitangents[i].z;
+			//	vertex.BiTangent = vector3;
+			//}
+			//else
+			//{
+			//	vertex.Tangent = glm::vec3(1.0f);
+			//}
 		}
 		else
 		{
@@ -121,6 +134,7 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 	}
 
+	// 处理索引
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
@@ -145,10 +159,10 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, TEXTURE_TYPE::SPECULAR);
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	// 3:法线贴图
-	std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, TEXTURE_TYPE::NORMAL);
+	std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TEXTURE_TYPE::NORMAL);
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	// 4:深度贴图
-	std::vector<Texture> heightMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, TEXTURE_TYPE::HEIGHT);
+	std::vector<Texture> heightMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT, TEXTURE_TYPE::HEIGHT);
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 	return Mesh(vertices, indices, textures);

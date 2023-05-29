@@ -1,10 +1,26 @@
 #include "hzpch.h"
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex>& vertics, std::vector<uint32_t> indices, std::vector<Texture> textures)
+Mesh::Mesh(const std::vector<Vertex>& vertics, const std::vector<uint32_t>& indices, std::vector<Texture>& textures)
 	: m_Vertices(vertics), m_Indices(indices), m_Textures(textures)
 {
+	m_Vertices.insert(m_Vertices.end(), vertics.begin(), vertics.end());
+	m_Indices.insert(m_Indices.end(), indices.begin(), indices.end());
+	m_Textures.insert(m_Textures.end(), textures.begin(), textures.end());
+
 	SetupMesh();
+}
+
+Mesh::~Mesh()
+{
+	// 不要再这里释放VBO等空间 因为Mesh对象传递时 临时对象销毁后这里会清理VBO等空间
+}
+
+void Mesh::final() const
+{
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 }
 
 void Mesh::Draw(Shader& shader)
@@ -15,9 +31,11 @@ void Mesh::Draw(Shader& shader)
 	uint32_t normalNr = 1;
 	uint32_t heightNr = 1;
 
+	shader.Use();
+
 	for (uint32_t i = 0; i < m_Textures.size(); i++)
 	{
-		glActiveTexture(GL_TEXTURE0 + i);
+		// glActiveTexture(GL_TEXTURE0 + i);
 
 		std::string name;
 		TEXTURE_TYPE type = m_Textures[i].GetType();
@@ -27,33 +45,35 @@ void Mesh::Draw(Shader& shader)
 		case TEXTURE_TYPE::DIFFUSE:
 		{
 			name = "u_DiffuseTexture" + std::to_string(diffuseNr++);
-			break;
-		}
+			
+		}break;
 		case TEXTURE_TYPE::SPECULAR:
 		{
 			name = "u_SpecularTexture" + std::to_string(specularNr++);
-			break;
-		}
+			
+		}break;
 		case TEXTURE_TYPE::NORMAL:
 		{
 			name = "u_NormalTexture" + std::to_string(normalNr++);
-			break;
-		}
+			
+		}break;
 		case TEXTURE_TYPE::HEIGHT:
 		{
 			name = "u_HeightTexture" + std::to_string(heightNr++);
-			break;
-		}
+			
+		}break;
 		}
 
-		glUniform1i(glGetUniformLocation(shader.GetRendererID(), name.c_str()), i);
+		glUniform1i(glGetUniformLocation(shader.GetRendererID(), name.c_str()), static_cast<GLint>(i));
 		glBindTexture(GL_TEXTURE_2D, m_Textures[i].GetRendererID());
+		// shader.SetInt(name, static_cast<GLint>(i));
 	}
 
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, static_cast<uint32_t>(m_Indices.size()), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, m_Indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	glActiveTexture(GL_TEXTURE0);
+	// glUseProgram(0);
 }
 
 void Mesh::SetupMesh()
@@ -62,8 +82,10 @@ void Mesh::SetupMesh()
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
-	glBindVertexArray(VBO);
+	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	// 结构体的一个很棒的特性是它们的内存布局对于所有成员都是连续的。
+	// 这个效果就是我们可以简单地传递一个结构体指针，它完美地转换为一个 glm::vec3/2 数组，再转换为 3/2 个浮点数，最终转换为字节数组 
 	glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(Vertex), &m_Vertices[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -91,12 +113,13 @@ void Mesh::SetupMesh()
 
 	// 骨骼ID
 	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(5, 4, GL_INT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>((offsetof(Vertex, m_BoneIDs))));
+	glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), reinterpret_cast<void*>((offsetof(Vertex, m_BoneIDs))));
 
 	// 骨骼权重
 	glEnableVertexAttribArray(6);
 	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void*>((offsetof(Vertex, m_Weights))));
 
+	// 恢复默认的VAO环境
 	glBindVertexArray(0);
 
 }
