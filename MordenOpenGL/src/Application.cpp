@@ -86,6 +86,8 @@ int main(void)
 		return -1;
 	}
 
+	glGetError();
+
 	glEnable(GL_DEPTH_TEST);
 
 	Shader modelShader("asserts/shaders/model.glsl");

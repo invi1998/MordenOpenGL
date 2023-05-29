@@ -32,10 +32,12 @@ void Mesh::Draw(Shader& shader)
 	uint32_t heightNr = 1;
 
 	shader.Use();
+	std::cout << "[-2]" << glGetError() << std::endl; // 返回 0 (无错误
 
 	for (uint32_t i = 0; i < m_Textures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
+		std::cout << "[-1]" << glGetError() << std::endl; // 返回 0 (无错误
 
 		std::string name;
 		TEXTURE_TYPE type = m_Textures[i].GetType();
@@ -64,7 +66,10 @@ void Mesh::Draw(Shader& shader)
 		}
 		// std::cout << '[' << glGetUniformLocation(shader.GetRendererID(), name.c_str()) << ']' << name << "---------" << i << std::endl;
 		glUniform1i(glGetUniformLocation(shader.GetRendererID(), name.c_str()), static_cast<GLint>(i));
-		glBindTexture(GL_TEXTURE_2D, m_Textures[i].GetRendererID());
+		std::cout << "[0]" << glGetError() << std::endl; // 返回 0 (无错误
+		// glBindTexture(GL_TEXTURE_2D, m_Textures[i].GetRendererID());
+		m_Textures[i].Bind(GL_TEXTURE_2D);
+		std::cout << "[1]" << glGetError() << '-' << m_Textures[i].GetRendererID() << '-' << std::endl; // 返回 0 (无错误
 		// shader.SetInt(name, static_cast<GLint>(i));
 	}
 
@@ -72,9 +77,13 @@ void Mesh::Draw(Shader& shader)
 
 	// 渲染网格
 	glBindVertexArray(VAO);
+	std::cout << "[2]" << glGetError() << std::endl; // 返回 0 (无错误
 	glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(m_Indices.size()), GL_UNSIGNED_INT, 0);
+	std::cout << "[3]" << glGetError() << std::endl; // 返回 0 (无错误
 	glBindVertexArray(0);
+	std::cout << "[4]" << glGetError() << std::endl; // 返回 0 (无错误
 	glActiveTexture(GL_TEXTURE0);
+	std::cout << "[5]" << glGetError() << std::endl; // 返回 0 (无错误
 	// glUseProgram(0);
 }
 
