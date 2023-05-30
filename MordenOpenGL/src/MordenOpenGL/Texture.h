@@ -15,7 +15,7 @@ public:
 	Texture(const std::string& filePath, TEXTURE_TYPE type);
 	~Texture();
 
-	void Bind(uint32_t slot);
+	void Bind(uint32_t slot) const;
 
 	void SetData(void* data, uint32_t size);
 

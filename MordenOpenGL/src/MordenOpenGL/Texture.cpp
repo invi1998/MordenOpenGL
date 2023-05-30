@@ -72,9 +72,11 @@ Texture::~Texture()
 	glDeleteTextures(1, &m_RendererID);
 }
 
-void Texture::Bind(uint32_t slot)
+void Texture::Bind(uint32_t slot) const
 {
+	// glUseProgram(m_RendererID);
 	glBindTexture(slot, m_RendererID);
+	// glBindTextureUnit(slot, m_RendererID);
 }
 
 void Texture::SetData(void* data, uint32_t size)
