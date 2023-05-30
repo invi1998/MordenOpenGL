@@ -89,9 +89,14 @@ int main(void)
 	glGetError();
 
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	Shader modelShader("asserts/shaders/model.glsl");
 	Shader lightShader("asserts/shaders/light.glsl");
+	Shader borderShader("asserts/shaders/border.glsl");
 
 	// 模型
 	Model myModel("asserts/model/nanosuit/nanosuit.obj", true);
@@ -190,7 +195,7 @@ int main(void)
 
 		// 渲染指令
 		glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
 		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
@@ -269,8 +274,21 @@ int main(void)
 		modelShader.SetFloat("u_SpotLight.quadratic", 0.032f);
 		modelShader.SetFloat("u_SpotLight.cutOff", glm::cos(glm::radians(12.5f)));
 		modelShader.SetFloat("u_SpotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
+		// 第一个渲染：正常绘制物体，并将结果写入模板缓冲区。
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
+
 		myModel.Draw(modelShader);
 
+
+		// 渲染模型边缘
+		borderShader.Use();
+		model = glm::mat4(1.0f);
+		borderShader.SetMat4("u_Projection", camera.GetProjection());
+		borderShader.SetMat4("u_View", camera.GetViewMatrix());
+
+		// 灯光渲染
 		lightShader.Use();
 
 		// 材质属性
@@ -303,6 +321,27 @@ int main(void)
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		// 第二个渲染：绘制物体的轮廓，这次禁用模板缓冲区写入。
+		// 因为模板缓冲区现在被填充了几个 1。缓冲区中值为 1 的部分不会被绘制，从而只绘制物体之间的大小差异，看起来像是边框。
+
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		borderShader.Use();
+		float scale = 1.01f;
+		// model
+		model = glm::mat4{ 1.0f };
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.1f));	// it's a bit too big for our scene, so scale it down
+		model = glm::scale(model, glm::vec3(scale));	// it's a bit too big for our scene, so scale it down
+		borderShader.SetMat4("u_Model", model);
+		myModel.Draw(borderShader);
+
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
