@@ -99,7 +99,8 @@ int main(void)
 	Shader borderShader("asserts/shaders/border.glsl");
 
 	// Ä£ÐÍ
-	Model myModel("asserts/model/nanosuit/nanosuit.obj", true);
+	// Model myModel("asserts/model/nanosuit/nanosuit.obj", true);
+	Model myModel("asserts/model/ivysaur_pokemon/ivysaur_pokemon/Ivysaur_OBJ/Pokemon.obj", true);
 
 	float vertices[] = {
 		// positions          // normals           // texture coords
