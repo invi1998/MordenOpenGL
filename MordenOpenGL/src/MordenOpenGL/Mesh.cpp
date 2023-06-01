@@ -79,7 +79,7 @@ void Mesh::Draw(Shader& shader)
 		//}
 
 		m_Textures[i].Bind(GL_TEXTURE_2D);
-		// std::cout << "[1]" << glGetError() << '-' << m_Textures[i].GetRendererID() << '-' << std::endl; // ·µ»Ø 0 (ÎÞ´íÎó
+		std::cout << "[1]" << glGetError() << '-' << m_Textures[i].GetRendererID() << '-' << std::endl; // ·µ»Ø 0 (ÎÞ´íÎó
 	}
 
 	// äÖÈ¾Íø¸ñ

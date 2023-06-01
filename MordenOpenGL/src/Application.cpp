@@ -100,7 +100,7 @@ int main(void)
 
 	// Ä£ÐÍ
 	// Model myModel("asserts/model/nanosuit/nanosuit.obj", true);
-	Model myModel("asserts/model/ivysaur_pokemon/ivysaur_pokemon/Ivysaur_OBJ/Pokemon.obj", true);
+	Model myModel("asserts/model/ivysaur_pokemon/ivysaur_pokemon/Ivysaur_Outlined_OBJ/Pokemon.obj", true);
 
 	float vertices[] = {
 		// positions          // normals           // texture coords
