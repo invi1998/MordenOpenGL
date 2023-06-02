@@ -90,96 +90,103 @@ int main(void)
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	// glEnable(GL_STENCIL_TEST);
+	// glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	// glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
-	Shader modelShader("asserts/shaders/model.glsl");
-	Shader lightShader("asserts/shaders/light.glsl");
-	Shader borderShader("asserts/shaders/border.glsl");
-
-	// 模型
-	// Model myModel("asserts/model/nanosuit/nanosuit.obj", true);
-	Model myModel("asserts/model/ivysaur_pokemon/ivysaur_pokemon/Ivysaur_Outlined_OBJ/Pokemon.obj", true);
-
-	float vertices[] = {
-		// positions          // normals           // texture coords
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-	};
-
-	glm::vec3 pointLightPositions[] = {
-		glm::vec3(0.7f,  0.2f,  2.0f),
-		glm::vec3(2.3f, -3.3f, -4.0f),
-		glm::vec3(-4.0f,  2.0f, -12.0f),
-		glm::vec3(0.0f,  0.0f, -3.0f)
-	};
-
-	// 点光源颜色
-	glm::vec3 pointLightColor[] = {
-		glm::vec3(0.7f,  0.2f,  1.0f),
-		glm::vec3(0.3f, 0.3f, 0.8f),
-		glm::vec3(0.9f,  0.3f, 0.125f),
-		glm::vec3(0.2f,  0.9f, 0.32f)
-	};
-
-	unsigned int VBO;
+	Shader testShader("asserts/shaders/test.glsl");
 	
-	glGenBuffers(1, &VBO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	
-	unsigned int lightCubeVAO;
-	glGenVertexArrays(1, &lightCubeVAO);
-	glBindVertexArray(lightCubeVAO);
+	float cubeVertices[] = {
+		// positions          // texture Coords
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// note that we update the lamp's position attribute's stride to reflect the updated buffer data
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+	float planeVertices[] = {
+		// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+		 5.0f, -0.5f,  5.0f,  4.0f, 0.0f,
+		-5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 4.0f,
+
+		 5.0f, -0.5f,  5.0f,  4.0f, 0.0f,
+		-5.0f, -0.5f, -5.0f,  0.0f, 4.0f,
+		 5.0f, -0.5f, -5.0f,  4.0f, 4.0f
+	};
+
+	uint32_t cubeVAO, cubeVBO;
+
+	// 箱子
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	glBindVertexArray(cubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+	glBindVertexArray(0);
+	// 平面
+	uint32_t planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+	glBindVertexArray(0);
+
+	// 加载纹理
+	Texture cubeTexture("asserts/textures/wood.png", TEXTURE_TYPE::DIFFUSE);
+	Texture planeTexture("asserts/textures/R-C.jpg", TEXTURE_TYPE::DIFFUSE);
 
 	// 设置视口
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+	testShader.Use();
+	testShader.SetInt("u_Texture", 0);
 
 
 	// 渲染循环
@@ -196,7 +203,7 @@ int main(void)
 
 		// 渲染指令
 		glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
 		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
@@ -204,144 +211,34 @@ int main(void)
 
 		glm::vec3 lightColor(1.0f);
 
-		modelShader.Use();
+		testShader.Use();
 
 		// view/projection transformations
-		modelShader.SetMat4("u_Projection", camera.GetProjection());
-		modelShader.SetMat4("u_View", camera.GetViewMatrix());
+		testShader.SetMat4("u_Projection", camera.GetProjection());
+		testShader.SetMat4("u_View", camera.GetViewMatrix());
 
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(0.1f));	// it's a bit too big for our scene, so scale it down
-		modelShader.SetMat4("u_Model", model);
+		testShader.SetMat4("u_Model", model);
 
-		modelShader.SetFloat("u_Light.constant", 1.0f);
-		modelShader.SetFloat("u_Light.linear", 0.09f);
-		modelShader.SetFloat("u_Light.quadratic", 0.032f);
-
-		modelShader.SetVec3("u_ViewPos", camera.GetPosition());
-
-
-		// directional light
-		modelShader.SetVec3("u_DirLight.direction", lightPos);
-		modelShader.SetVec3("u_DirLight.ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
-		modelShader.SetVec3("u_DirLight.diffuse", glm::vec3{ 0.4f, 0.4f, 0.4f });
-		modelShader.SetVec3("u_DirLight.specular", glm::vec3{ 0.5f, 0.5f, 0.5f });
-		// point light 1
-		modelShader.SetVec3("u_PointLights[0].position", pointLightPositions[0]);
-		modelShader.SetVec3("u_PointLights[0].lightColor", pointLightColor[0]);
-		modelShader.SetVec3("u_PointLights[0].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
-		modelShader.SetVec3("u_PointLights[0].diffuse", glm::vec3{ 0.8f, 0.8f, 0.8f });
-		modelShader.SetVec3("u_PointLights[0].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
-		modelShader.SetFloat("u_PointLights[0].constant", 1.0f);
-		modelShader.SetFloat("u_PointLights[0].linear", 0.09f);
-		modelShader.SetFloat("u_PointLights[0].quadratic", 0.032f);
-		// point light 2
-		modelShader.SetVec3("u_PointLights[1].position", pointLightPositions[1]);
-		modelShader.SetVec3("u_PointLights[1].lightColor", pointLightColor[1]);
-		modelShader.SetVec3("u_PointLights[1].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
-		modelShader.SetVec3("u_PointLights[1].diffuse", glm::vec3{ 0.8f, 0.8f, 0.8f });
-		modelShader.SetVec3("u_PointLights[1].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
-		modelShader.SetFloat("u_PointLights[1].constant", 1.0f);
-		modelShader.SetFloat("u_PointLights[1].linear", 0.09f);
-		modelShader.SetFloat("u_PointLights[1].quadratic", 0.032f);
-		// point light 3
-		modelShader.SetVec3("u_PointLights[2].position", pointLightPositions[2]);
-		modelShader.SetVec3("u_PointLights[2].lightColor", pointLightColor[2]);
-		modelShader.SetVec3("u_PointLights[2].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
-		modelShader.SetVec3("u_PointLights[2].diffuse", glm::vec3{ 0.8f, 0.8f, 0.8f });
-		modelShader.SetVec3("u_PointLights[2].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
-		modelShader.SetFloat("u_PointLights[2].constant", 1.0f);
-		modelShader.SetFloat("u_PointLights[2].linear", 0.09f);
-		modelShader.SetFloat("u_PointLights[2].quadratic", 0.032f);
-		// point light 4
-		modelShader.SetVec3("u_PointLights[3].position", pointLightPositions[3]);
-		modelShader.SetVec3("u_PointLights[3].lightColor", pointLightColor[3]);
-		modelShader.SetVec3("u_PointLights[3].ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
-		modelShader.SetVec3("u_PointLights[3].diffuse", glm::vec3{ 0.8f, 0.8f, 0.8f });
-		modelShader.SetVec3("u_PointLights[3].specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
-		modelShader.SetFloat("u_PointLights[3].constant", 1.0f);
-		modelShader.SetFloat("u_PointLights[3].linear", 0.09f);
-		modelShader.SetFloat("u_PointLights[3].quadratic", 0.032f);
-		// spotLight
-		modelShader.SetVec3("u_SpotLight.position", camera.GetPosition());
-		modelShader.SetVec3("u_SpotLight.direction", camera.GetForwardDirection());
-		modelShader.SetVec3("u_SpotLight.ambient", glm::vec3{ 0.05f, 0.05f, 0.05f });
-		modelShader.SetVec3("u_SpotLight.diffuse", glm::vec3{ 1.0f, 1.0f, 1.0f });
-		modelShader.SetVec3("u_SpotLight.specular", glm::vec3{ 1.0f, 1.0f, 1.0f });
-		modelShader.SetFloat("u_SpotLight.constant", 1.0f);
-		modelShader.SetFloat("u_SpotLight.linear", 0.09f);
-		modelShader.SetFloat("u_SpotLight.quadratic", 0.032f);
-		modelShader.SetFloat("u_SpotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		modelShader.SetFloat("u_SpotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-
-		// 第一个渲染：正常绘制物体，并将结果写入模板缓冲区。
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
-
-		myModel.Draw(modelShader);
-
-
-		// 渲染模型边缘
-		borderShader.Use();
+		// 箱子
+		glBindVertexArray(cubeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		cubeTexture.Bind(GL_TEXTURE_2D);
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		testShader.SetMat4("u_Model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		model = glm::mat4(1.0f);
-		borderShader.SetMat4("u_Projection", camera.GetProjection());
-		borderShader.SetMat4("u_View", camera.GetViewMatrix());
-
-		// 灯光渲染
-		lightShader.Use();
-
-		// 材质属性
-		lightShader.SetVec3("u_LightColor", lightColor);
-		lightShader.SetMat4("u_Projection", camera.GetProjection());
-		lightShader.SetMat4("u_View", camera.GetViewMatrix());
-		// 世界变换
-		model = glm::mat4{ 1.0f };
-
-		glBindVertexArray(lightCubeVAO);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3{ 0.2f });
-		model = glm::scale(model, glm::vec3(0.1f)); // Make it a smaller cube
-		lightShader.SetMat4("u_Model", model);
-		lightShader.SetVec3("u_LightColor", lightColor);
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		testShader.SetMat4("u_Model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// 渲染立方体
-		glBindVertexArray(lightCubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		for (uint32_t i = 0; i < 4; i++)
-		{
-			// 世界坐标变换
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, pointLightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
-			lightShader.SetMat4("u_Model", model);
-			lightShader.SetVec3("u_LightColor", pointLightColor[i]);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-
-		// 第二个渲染：绘制物体的轮廓，这次禁用模板缓冲区写入。
-		// 因为模板缓冲区现在被填充了几个 1。缓冲区中值为 1 的部分不会被绘制，从而只绘制物体之间的大小差异，看起来像是边框。
-
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
-		borderShader.Use();
-		float scale = 1.01f;
-		// model
-		model = glm::mat4{ 1.0f };
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.1f));	// it's a bit too big for our scene, so scale it down
-		model = glm::scale(model, glm::vec3(scale));	// it's a bit too big for our scene, so scale it down
-		borderShader.SetMat4("u_Model", model);
-		myModel.Draw(borderShader);
-
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		glEnable(GL_DEPTH_TEST);
+		// 地面
+		glBindVertexArray(planeVAO);
+		planeTexture.Bind(GL_TEXTURE_2D);
+		testShader.SetMat4("u_Model", glm::mat4(1.0f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
 
 		
 		// 检查并调用事件，交换缓冲
@@ -349,6 +246,11 @@ int main(void)
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &planeVAO);
+	glDeleteBuffers(1, &cubeVBO);
+	glDeleteBuffers(1, &planeVBO);
 
 	glfwTerminate();
 	return 0;
