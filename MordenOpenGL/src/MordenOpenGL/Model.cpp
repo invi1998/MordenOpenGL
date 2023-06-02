@@ -33,6 +33,7 @@ void Model::LoadModel()
 	}
 
 	m_Directory = m_Filepath.substr(0, m_Filepath.find_last_of('/'));
+	importer.SetPropertyString(AI_CONFIG_IMPORT_TER_MAKE_UVS, m_Directory.c_str());
 	ProcessNode(scene->mRootNode, scene);
 
 }
@@ -152,8 +153,6 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	// specular: texture_specularN
 	// normal: texture_normalN
 
-	std::cout << scene->mNumMaterials << std::endl;
-
 	// 1:漫反射纹理
 	std::vector<Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, TEXTURE_TYPE::DIFFUSE);
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
@@ -176,26 +175,32 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString str;
-		mat->GetTexture(type, i, &str);
-		size_t pos = m_Filepath.find_last_of('/');
-		std::string beforeStr = m_Filepath.substr(0, pos+1);
-		str = beforeStr + str.C_Str();
-		// 检查纹理是否已经加载，如果是，则继续下一次迭代：跳过加载新纹理”
-		bool skip = false;
-		for (unsigned int j = 0; j < m_TextureLoaded.size(); j++)
+		if (mat->GetTexture(type, i, &str) == AI_SUCCESS)
 		{
-			if (std::strcmp(m_TextureLoaded[j].GetFilePath().data(), str.C_Str()) == 0)
+			// mat->GetTexture(type, i, &str);
+			
+			str = m_Directory + '/' + str.C_Str();
+			// 检查纹理是否已经加载，如果是，则继续下一次迭代：跳过加载新纹理”
+			bool skip = false;
+			for (unsigned int j = 0; j < m_TextureLoaded.size(); j++)
 			{
-				textures.push_back(m_TextureLoaded[j]);
-				skip = true;
-				break;
+				if (std::strcmp(m_TextureLoaded[j].GetFilePath().data(), str.C_Str()) == 0)
+				{
+					textures.push_back(m_TextureLoaded[j]);
+					skip = true;
+					break;
+				}
+			}
+			if (!skip)
+			{
+				Texture texture(str.C_Str(), typePre);
+				textures.push_back(texture);
+				m_TextureLoaded.push_back(texture);
 			}
 		}
-		if (!skip)
+		else
 		{
-			Texture texture(str.C_Str(), typePre);
-			textures.push_back(texture);
-			m_TextureLoaded.push_back(texture);
+			std::cout << R"(纹理路径获取失败!)" << std::endl;
 		}
 	}
 	return textures;

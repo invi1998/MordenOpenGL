@@ -87,17 +87,9 @@ uniform PointLight u_PointLights[NR_POINT_LIGHTS];	// 点光源数组
 uniform SpotLight u_SpotLight;	// 聚光灯
 
 uniform sampler2D u_DiffuseTexture1;
-uniform sampler2D u_DiffuseTexture2;
-uniform sampler2D u_DiffuseTexture3;
 uniform sampler2D u_SpecularTexture1;
-uniform sampler2D u_SpecularTexture2;
-uniform sampler2D u_SpecularTexture3;
 uniform sampler2D u_NormalTexture1;
-uniform sampler2D u_NormalTexture2;
-uniform sampler2D u_NormalTexture3;
 uniform sampler2D u_HeightTexture1;
-uniform sampler2D u_HeightTexture2;
-uniform sampler2D u_HeightTexture3;
 
 // 光照计算函数定义
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
