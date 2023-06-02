@@ -90,11 +90,12 @@ int main(void)
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	// glEnable(GL_STENCIL_TEST);
-	// glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	// glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glEnable(GL_STENCIL_TEST);
+	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	Shader testShader("asserts/shaders/test.glsl");
+	Shader borderShader("asserts/shaders/border.glsl");
 	
 
 	float cubeVertices[] = {
@@ -203,7 +204,7 @@ int main(void)
 
 		// 渲染指令
 		glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
 		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
@@ -216,10 +217,25 @@ int main(void)
 		// view/projection transformations
 		testShader.SetMat4("u_Projection", camera.GetProjection());
 		testShader.SetMat4("u_View", camera.GetViewMatrix());
-
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
-		testShader.SetMat4("u_Model", model);
+
+		borderShader.Use();
+		borderShader.SetMat4("u_Projection", camera.GetProjection());
+		borderShader.SetMat4("u_View", camera.GetViewMatrix());
+		// render the loaded model
+
+		glStencilMask(0x00);
+
+		// 地面
+		glBindVertexArray(planeVAO);
+		planeTexture.Bind(GL_TEXTURE_2D);
+		testShader.SetMat4("u_Model", glm::mat4(1.0f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilMask(0xFF);
 
 		// 箱子
 		glBindVertexArray(cubeVAO);
@@ -233,12 +249,29 @@ int main(void)
 		testShader.SetMat4("u_Model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		// 地面
-		glBindVertexArray(planeVAO);
-		planeTexture.Bind(GL_TEXTURE_2D);
-		testShader.SetMat4("u_Model", glm::mat4(1.0f));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDisable(GL_DEPTH_TEST);
+		borderShader.Use();
+		float scale = 1.01f;
+
+		glBindVertexArray(cubeVAO);
+		cubeTexture.Bind(GL_TEXTURE_2D);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(scale));
+		borderShader.SetMat4("u_Model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(scale));
+		borderShader.SetMat4("u_Model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
+
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 0, 0xFF);
+		glEnable(GL_DEPTH_TEST);
 
 		
 		// 检查并调用事件，交换缓冲
