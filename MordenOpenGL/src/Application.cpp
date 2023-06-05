@@ -219,18 +219,14 @@ int main(void)
 		testShader.SetMat4("u_View", camera.GetViewMatrix());
 		// render the loaded model
 		glm::mat4 model = glm::mat4(1.0f);
-
-		borderShader.Use();
-		borderShader.SetMat4("u_Projection", camera.GetProjection());
-		borderShader.SetMat4("u_View", camera.GetViewMatrix());
 		// render the loaded model
+		testShader.SetMat4("u_Model", glm::mat4(1.0f));
 
 		glStencilMask(0x00);
 
 		// µÿ√Ê
 		glBindVertexArray(planeVAO);
 		planeTexture.Bind(GL_TEXTURE_2D);
-		testShader.SetMat4("u_Model", glm::mat4(1.0f));
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
@@ -252,7 +248,10 @@ int main(void)
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilMask(0x00);
 		glDisable(GL_DEPTH_TEST);
+
 		borderShader.Use();
+		borderShader.SetMat4("u_Projection", camera.GetProjection());
+		borderShader.SetMat4("u_View", camera.GetViewMatrix());
 		float scale = 1.01f;
 
 		glBindVertexArray(cubeVAO);
