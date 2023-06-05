@@ -242,7 +242,7 @@ int main(void)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// 以线框模式绘制。
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 
 	// 渲染循环
@@ -336,7 +336,7 @@ int main(void)
 
 		screenShader.Use();
 		glBindVertexArray(quadVAO);
-		glBindTexture(GL_TEXTURE_2D, textureColorBuffer);	// 将颜色附件纹理用作矩形平面的纹理
+		glBindTexture(GL_TEXTURE_2D, rbo);	// 将颜色附件纹理用作矩形平面的纹理
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
