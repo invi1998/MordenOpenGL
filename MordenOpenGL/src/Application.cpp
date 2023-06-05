@@ -160,7 +160,7 @@ int main(void)
 	glGenBuffers(1, &cubeVBO);
 	glBindVertexArray(cubeVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
 	glEnableVertexAttribArray(1);
@@ -172,7 +172,7 @@ int main(void)
 	glGenBuffers(1, &planeVBO);
 	glBindVertexArray(planeVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
 	glEnableVertexAttribArray(1);
@@ -180,7 +180,7 @@ int main(void)
 	glBindVertexArray(0);
 
 	// 加载纹理
-	Texture cubeTexture("asserts/textures/wood.png", TEXTURE_TYPE::DIFFUSE);
+	Texture cubeTexture("asserts/textures/container2.png", TEXTURE_TYPE::DIFFUSE);
 	Texture planeTexture("asserts/textures/R-C.jpg", TEXTURE_TYPE::DIFFUSE);
 
 	// 设置视口
@@ -255,7 +255,7 @@ int main(void)
 		float scale = 1.01f;
 
 		glBindVertexArray(cubeVAO);
-		cubeTexture.Bind(GL_TEXTURE_2D);
+		// cubeTexture.Bind(GL_TEXTURE_2D);
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 		model = glm::scale(model, glm::vec3(scale));
