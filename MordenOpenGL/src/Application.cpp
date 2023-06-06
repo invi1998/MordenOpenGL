@@ -96,7 +96,8 @@ int main(void)
 
 	Shader testShader("asserts/shaders/test.glsl");
 	Shader borderShader("asserts/shaders/border.glsl");
-	Shader screenShader("asserts/shaders/screen.glsl");
+	// Shader screenShader("asserts/shaders/screen.glsl");
+	Shader skyBoxShader("asserts/shaders/cubeMap.glsl");
 	
 
 	float cubeVertices[] = {
@@ -164,6 +165,51 @@ int main(void)
 		 1.0f,  1.0f,  1.0f, 1.0f
 	};
 
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+
 	uint32_t cubeVAO, cubeVBO;
 
 	// 箱子
@@ -177,33 +223,51 @@ int main(void)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
 	glBindVertexArray(0);
-	// 平面
-	uint32_t planeVAO, planeVBO;
-	glGenVertexArrays(1, &planeVAO);
-	glGenBuffers(1, &planeVBO);
-	glBindVertexArray(planeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	//// 平面
+	//uint32_t planeVAO, planeVBO;
+	//glGenVertexArrays(1, &planeVAO);
+	//glGenBuffers(1, &planeVBO);
+	//glBindVertexArray(planeVAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
+	//glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+	//glBindVertexArray(0);
+	//// 屏幕
+	//uint32_t quadVAO, quadVBO;
+	//glGenVertexArrays(1, &quadVAO);
+	//glGenBuffers(1, &quadVBO);
+	//glBindVertexArray(quadVAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	//glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	// 天空盒
+	uint32_t skyBoxVAO, skyBoxVBO;
+	glGenVertexArrays(1, &skyBoxVAO);
+	glGenBuffers(1, &skyBoxVBO);
+	glBindVertexArray(skyBoxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyBoxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-	glBindVertexArray(0);
-	// 屏幕
-	uint32_t quadVAO, quadVBO;
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
 	// 加载纹理
 	Texture cubeTexture("asserts/textures/container2.png", TEXTURE_TYPE::DIFFUSE);
 	Texture planeTexture("asserts/textures/R-C.jpg", TEXTURE_TYPE::DIFFUSE);
+	Texture cubemapTexture({
+		 "asserts/textures/skybox/right.jpg",
+		 "asserts/textures/skybox/left.jpg",
+		 "asserts/textures/skybox/top.jpg",
+		 "asserts/textures/skybox/bottom.jpg",
+		 "asserts/textures/skybox/front.jpg",
+		 "asserts/textures/skybox/back.jpg"
+		});
 
 	// 设置视口
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
@@ -211,35 +275,38 @@ int main(void)
 	testShader.Use();
 	testShader.SetInt("u_Texture", 0);
 
-	screenShader.Use();
-	screenShader.SetInt("u_Texture", 0);
+	//screenShader.Use();
+	//screenShader.SetInt("u_Texture", 0);
+
+	skyBoxShader.Use();
+	skyBoxShader.SetInt("u_Texture", 0);
 
 
-	// 帧缓冲 配置
-	uint32_t framebuffer;
-	glGenFramebuffers(1, &framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	// 创建颜色附件纹理
-	uint32_t textureColorBuffer;
-	glGenTextures(1, &textureColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_FILTER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_FILTER);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
-	// 为深度缓冲和模板缓冲创建一个帧缓冲对象
-	uint32_t rbo;
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_FRAMEBUFFER, rbo);
-	glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT); // 使用一个渲染缓冲对象同时作为深度和模板缓冲区。
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // 现在实际附加它
-	// 现在我们已经创建了帧缓冲并添加了所有附件，要检查它是否真的完成了。
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cout << "错误：帧缓冲未完成" << std::endl;
-	}
-	// 不要忘记解绑帧缓冲，保证我们不会不小心渲染到错误的帧缓冲上
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//// 帧缓冲 配置
+	//uint32_t framebuffer;
+	//glGenFramebuffers(1, &framebuffer);
+	//glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	//// 创建颜色附件纹理
+	//uint32_t textureColorBuffer;
+	//glGenTextures(1, &textureColorBuffer);
+	//glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_FILTER);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_FILTER);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
+	//// 为深度缓冲和模板缓冲创建一个帧缓冲对象
+	//uint32_t rbo;
+	//glGenRenderbuffers(1, &rbo);
+	//glBindRenderbuffer(GL_FRAMEBUFFER, rbo);
+	//glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT); // 使用一个渲染缓冲对象同时作为深度和模板缓冲区。
+	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // 现在实际附加它
+	//// 现在我们已经创建了帧缓冲并添加了所有附件，要检查它是否真的完成了。
+	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//{
+	//	std::cout << "错误：帧缓冲未完成" << std::endl;
+	//}
+	//// 不要忘记解绑帧缓冲，保证我们不会不小心渲染到错误的帧缓冲上
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// 以线框模式绘制。
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -279,11 +346,11 @@ int main(void)
 
 		glStencilMask(0x00);
 
-		// 地面
-		glBindVertexArray(planeVAO);
-		planeTexture.Bind(GL_TEXTURE_2D);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		//// 地面
+		//glBindVertexArray(planeVAO);
+		//planeTexture.Bind(GL_TEXTURE_2D);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glBindVertexArray(0);
 
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 		glStencilMask(0xFF);
@@ -327,18 +394,34 @@ int main(void)
 		glStencilFunc(GL_ALWAYS, 0, 0xFF);
 		glEnable(GL_DEPTH_TEST);
 
-		// 现在绑定默认帧缓冲并使用附加的帧缓冲颜色纹理来绘制一个矩形平面
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDisable(GL_DEPTH_TEST); // 禁用深度测试，以免屏幕空间矩形因深度测试而被丢弃。
-		// 清除所有相关的缓冲区
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		//// 现在绑定默认帧缓冲并使用附加的帧缓冲颜色纹理来绘制一个矩形平面
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glDisable(GL_DEPTH_TEST); // 禁用深度测试，以免屏幕空间矩形因深度测试而被丢弃。
+		//// 清除所有相关的缓冲区
+		//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT);
 
-		screenShader.Use();
-		glBindVertexArray(quadVAO);
-		glBindTexture(GL_TEXTURE_2D, rbo);	// 将颜色附件纹理用作矩形平面的纹理
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//screenShader.Use();
+		//glBindVertexArray(quadVAO);
+		//glBindTexture(GL_TEXTURE_2D, rbo);	// 将颜色附件纹理用作矩形平面的纹理
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		// 天空盒绘制
+		// glDepthFunc(GL_LEQUAL);
+		glDepthMask(GL_FALSE); // 禁止写入深度缓冲区
+		skyBoxShader.Use();
+		//glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+		//skyBoxShader.SetMat4("u_View", view);
+		skyBoxShader.SetMat4("u_View", camera.GetViewMatrix());
+		skyBoxShader.SetMat4("u_Projection", camera.GetProjection());
+		// 天空盒
+		glBindVertexArray(skyBoxVAO);
+		glActiveTexture(GL_TEXTURE0);
+		cubemapTexture.Bind(GL_TEXTURE_CUBE_MAP);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		// glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);  // 恢复深度缓冲区写入状态
 
 		
 		// 检查并调用事件，交换缓冲
@@ -348,13 +431,15 @@ int main(void)
 	}
 
 	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &planeVAO);
-	glDeleteVertexArrays(1, &quadVAO);
+	//glDeleteVertexArrays(1, &planeVAO);
+	//glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &cubeVBO);
-	glDeleteBuffers(1, &planeVBO);
-	glDeleteBuffers(1, &quadVBO);
-	glDeleteRenderbuffers(1, &rbo);
-	glDeleteFramebuffers(1, &framebuffer);
+	//glDeleteBuffers(1, &planeVBO);
+	//glDeleteBuffers(1, &quadVBO);
+	//glDeleteRenderbuffers(1, &rbo);
+	//glDeleteFramebuffers(1, &framebuffer);
+	glDeleteVertexArrays(1, &skyBoxVAO);
+	glDeleteBuffers(1, &skyBoxVBO);
 
 	glfwTerminate();
 	return 0;
@@ -419,3 +504,4 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	// camera.ProcessMouseScroll(static_cast<float>(yoffset));
 	camera.OnMouseScroll(xoffset, yoffset);
 }
+
