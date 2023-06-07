@@ -335,13 +335,14 @@ int main(void)
 		glm::vec3 lightColor(1.0f);
 
 		// 天空盒绘制
-	// glDepthFunc(GL_LEQUAL);
+		// glDepthFunc(GL_LEQUAL);
 		glDepthMask(GL_FALSE); // 禁止写入深度缓冲区
 		skyBoxShader.Use();
 		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
 		skyBoxShader.SetMat4("u_View", view);
 		// skyBoxShader.SetMat4("u_View", camera.GetViewMatrix());
-		skyBoxShader.SetMat4("u_Projection", camera.GetProjection());
+		glm::mat4 projection = glm::perspective(glm::radians(5000.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
+		skyBoxShader.SetMat4("u_Projection", projection);
 		// 天空盒
 		glBindVertexArray(skyBoxVAO);
 		glActiveTexture(GL_TEXTURE0);
@@ -452,7 +453,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	SCR_WIDTH = width;
 	SCR_HEIGHT = height;
 	glViewport(0, 0, width, height);
-	camera.SetViewportSize(width, height);
+	camera.SetViewportSize(static_cast<float>(width), static_cast<float>(height));
 }
 
 void processInput(GLFWwindow* window)
@@ -502,6 +503,6 @@ void mouse_callbak(GLFWwindow* window, double xposIn, double yposIn)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	// camera.ProcessMouseScroll(static_cast<float>(yoffset));
-	camera.OnMouseScroll(xoffset, yoffset);
+	camera.OnMouseScroll(static_cast<float>(xoffset), static_cast<float>(yoffset));
 }
 

@@ -23,7 +23,7 @@ public:
 
     float GetDistance() const { return m_Distance; }
     void SetDistance(float distance) { m_Distance = distance; }
-    void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); }
+    void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; UpdateProjection(); UpdateView(); }
 
     const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
     const glm::mat4& GetProjection() const { return m_Projection; }
