@@ -44,8 +44,16 @@ void main()
 	// FragColor = texture(u_Texture, TexCoords);
 	// FragColor = vec4(texCoord, 0.0, 1.0);
 
+	// 折射率
+	float ratio = 1.00 / 1.52;
+
+	// 观察向量
 	vec3 I = normalize(Position-u_CameraPos);
-	vec3 R = reflect(I, normalize(Normal));
+	// 折射向量
+	// 反射
+	// vec3 R = reflect(I, normalize(Normal));
+	// 折射
+	vec3 R = refract(I, normalize(Normal), ratio);
 
 	FragColor = vec4(texture(u_SkyMap, R).rgb, 1.0);
 }
