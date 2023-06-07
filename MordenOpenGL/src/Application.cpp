@@ -263,8 +263,8 @@ int main(void)
 	Texture cubemapTexture({
 		 "asserts/textures/skybox/right.jpg",
 		 "asserts/textures/skybox/left.jpg",
+		"asserts/textures/skybox/bottom.jpg",
 		 "asserts/textures/skybox/top.jpg",
-		 "asserts/textures/skybox/bottom.jpg",
 		 "asserts/textures/skybox/front.jpg",
 		 "asserts/textures/skybox/back.jpg"
 		});
@@ -333,6 +333,23 @@ int main(void)
 		lightPos.y = sin(glfwGetTime() / 2.0f) * 3.0f;
 
 		glm::vec3 lightColor(1.0f);
+
+		// 天空盒绘制
+	// glDepthFunc(GL_LEQUAL);
+		glDepthMask(GL_FALSE); // 禁止写入深度缓冲区
+		skyBoxShader.Use();
+		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+		skyBoxShader.SetMat4("u_View", view);
+		// skyBoxShader.SetMat4("u_View", camera.GetViewMatrix());
+		skyBoxShader.SetMat4("u_Projection", camera.GetProjection());
+		// 天空盒
+		glBindVertexArray(skyBoxVAO);
+		glActiveTexture(GL_TEXTURE0);
+		cubemapTexture.Bind(GL_TEXTURE_CUBE_MAP);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		// glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);  // 恢复深度缓冲区写入状态
 
 		testShader.Use();
 
@@ -405,23 +422,6 @@ int main(void)
 		//glBindVertexArray(quadVAO);
 		//glBindTexture(GL_TEXTURE_2D, rbo);	// 将颜色附件纹理用作矩形平面的纹理
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		// 天空盒绘制
-		// glDepthFunc(GL_LEQUAL);
-		glDepthMask(GL_FALSE); // 禁止写入深度缓冲区
-		skyBoxShader.Use();
-		//glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-		//skyBoxShader.SetMat4("u_View", view);
-		skyBoxShader.SetMat4("u_View", camera.GetViewMatrix());
-		skyBoxShader.SetMat4("u_Projection", camera.GetProjection());
-		// 天空盒
-		glBindVertexArray(skyBoxVAO);
-		glActiveTexture(GL_TEXTURE0);
-		cubemapTexture.Bind(GL_TEXTURE_CUBE_MAP);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		// glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);  // 恢复深度缓冲区写入状态
 
 		
 		// 检查并调用事件，交换缓冲
