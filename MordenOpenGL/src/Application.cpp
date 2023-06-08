@@ -96,225 +96,22 @@ int main(void)
 
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader testShader("asserts/shaders/test.glsl");
-	Shader borderShader("asserts/shaders/border.glsl");
-	// Shader screenShader("asserts/shaders/screen.glsl");
-	Shader skyBoxShader("asserts/shaders/cubeMap.glsl");
-	// Shader modelShader("asserts/shaders/model.glsl");
+	Shader geometryShader("asserts/shaders/passThrough.glsl");
 
-	float cubeVertices[] = {
-		// positions          // normals           // texture coords
-	   -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-	   -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-	   -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-	   -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-	   -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-	   -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-	   -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-	   -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-	   -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-	   -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-	   -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-	   -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-	   -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-	   -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-	   -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-	   -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-	   -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-	   -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-	};
-	float planeVertices[] = {
-		// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-		 5.0f, -0.5f,  5.0f,  4.0f, 0.0f,
-		-5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-		-5.0f, -0.5f, -5.0f,  0.0f, 4.0f,
-
-		 5.0f, -0.5f,  5.0f,  4.0f, 0.0f,
-		-5.0f, -0.5f, -5.0f,  0.0f, 4.0f,
-		 5.0f, -0.5f, -5.0f,  4.0f, 4.0f
-	};
-	float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-		// positions   // texCoords
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		-1.0f, -1.0f,  0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		 1.0f, -1.0f,  1.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f, 1.0f
+	float points[] = {
+		-0.5f,  0.5f, // 左上
+		 0.5f,  0.5f, // 右上
+		 0.5f, -0.5f, // 右下
+		-0.5f, -0.5f  // 左下
 	};
 
-	float skyboxVertices[] = {
-		// positions          
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
+	uint32_t VAO, VBO;
 
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		-1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f
-	};
-
-	uint32_t cubeVAO, cubeVBO;
-
-	// 箱子
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glBindVertexArray(cubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), static_cast<void*>(nullptr));
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void*>(6 * sizeof(float)));
-	glBindVertexArray(0);
-	//// 平面
-	//uint32_t planeVAO, planeVBO;
-	//glGenVertexArrays(1, &planeVAO);
-	//glGenBuffers(1, &planeVBO);
-	//glBindVertexArray(planeVAO);
-	//glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-	//glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), static_cast<void*>(nullptr));
-	//glEnableVertexAttribArray(1);
-	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-	//glBindVertexArray(0);
-	//// 屏幕
-	//uint32_t quadVAO, quadVBO;
-	//glGenVertexArrays(1, &quadVAO);
-	//glGenBuffers(1, &quadVBO);
-	//glBindVertexArray(quadVAO);
-	//glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	//glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	//glEnableVertexAttribArray(1);
-	//glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-	// 天空盒
-	uint32_t skyBoxVAO, skyBoxVBO;
-	glGenVertexArrays(1, &skyBoxVAO);
-	glGenBuffers(1, &skyBoxVBO);
-	glBindVertexArray(skyBoxVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, skyBoxVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-	// 加载纹理
-	Texture cubeTexture("asserts/textures/container2.png", TEXTURE_TYPE::DIFFUSE);
-	Texture planeTexture("asserts/textures/R-C.jpg", TEXTURE_TYPE::DIFFUSE);
-	Texture cubemapTexture({
-		 "asserts/textures/skybox/right.jpg",
-		 "asserts/textures/skybox/left.jpg",
-		"asserts/textures/skybox/bottom.jpg",
-		 "asserts/textures/skybox/top.jpg",
-		 "asserts/textures/skybox/front.jpg",
-		 "asserts/textures/skybox/back.jpg"
-		});
-
-	// 设置视口
-	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-
-	testShader.Use();
-	testShader.SetInt("u_Texture", 0);
-
-	//screenShader.Use();
-	//screenShader.SetInt("u_Texture", 0);
-
-	skyBoxShader.Use();
-	skyBoxShader.SetInt("u_Texture", 0);
-
-
-	//// 帧缓冲 配置
-	//uint32_t framebuffer;
-	//glGenFramebuffers(1, &framebuffer);
-	//glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	//// 创建颜色附件纹理
-	//uint32_t textureColorBuffer;
-	//glGenTextures(1, &textureColorBuffer);
-	//glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_FILTER);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_FILTER);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorBuffer, 0);
-	//// 为深度缓冲和模板缓冲创建一个帧缓冲对象
-	//uint32_t rbo;
-	//glGenRenderbuffers(1, &rbo);
-	//glBindRenderbuffer(GL_FRAMEBUFFER, rbo);
-	//glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT); // 使用一个渲染缓冲对象同时作为深度和模板缓冲区。
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // 现在实际附加它
-	//// 现在我们已经创建了帧缓冲并添加了所有附件，要检查它是否真的完成了。
-	//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	//{
-	//	std::cout << "错误：帧缓冲未完成" << std::endl;
-	//}
-	//// 不要忘记解绑帧缓冲，保证我们不会不小心渲染到错误的帧缓冲上
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// 以线框模式绘制。
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -333,121 +130,15 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
-		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
-		lightPos.y = sin(glfwGetTime() / 2.0f) * 3.0f;
-
-		glm::vec3 lightColor(1.0f);
-
-		// 天空盒绘制
-		// glDepthFunc(GL_LEQUAL);
-		glDepthMask(GL_FALSE); // 禁止写入深度缓冲区
-		skyBoxShader.Use();
-		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-		skyBoxShader.SetMat4("u_View", view);
-		// skyBoxShader.SetMat4("u_View", camera.GetViewMatrix());
-		glm::mat4 projection = glm::perspective(glm::radians(5000.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
-		skyBoxShader.SetMat4("u_Projection", projection);
-		// 天空盒
-		glBindVertexArray(skyBoxVAO);
-		glActiveTexture(GL_TEXTURE0);
-		cubemapTexture.Bind(GL_TEXTURE_CUBE_MAP);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		// glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);  // 恢复深度缓冲区写入状态
-
-		testShader.Use();
-
-		// view/projection transformations
-		testShader.SetMat4("u_Projection", camera.GetProjection());
-		testShader.SetMat4("u_View", camera.GetViewMatrix());
-		// render the loaded model
-		glm::mat4 model = glm::mat4(1.0f);
-		// render the loaded model
-		testShader.SetMat4("u_Model", glm::mat4(1.0f));
-
-		glStencilMask(0x00);
-
-		//// 地面
-		//glBindVertexArray(planeVAO);
-		//planeTexture.Bind(GL_TEXTURE_2D);
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		//glBindVertexArray(0);
-
-		glStencilFunc(GL_ALWAYS, 1, 0xFF);
-		glStencilMask(0xFF);
-
-		// 箱子
-		glBindVertexArray(cubeVAO);
-		glActiveTexture(GL_TEXTURE0);
-		cubemapTexture.Bind(GL_TEXTURE_CUBE_MAP);
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		testShader.SetMat4("u_Model", model);
-		testShader.SetVec3("u_CameraPos", camera.GetPosition());
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		testShader.SetMat4("u_Model", model);
-		testShader.SetVec3("u_CameraPos", camera.GetPosition());
-		testShader.SetVec2("u_ViewportSize", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-		glStencilMask(0x00);
-		glDisable(GL_DEPTH_TEST);
-
-		borderShader.Use();
-		borderShader.SetMat4("u_Projection", camera.GetProjection());
-		borderShader.SetMat4("u_View", camera.GetViewMatrix());
-		float scale = 1.01f;
-
-		glBindVertexArray(cubeVAO);
-		// cubeTexture.Bind(GL_TEXTURE_2D);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		model = glm::scale(model, glm::vec3(scale));
-		borderShader.SetMat4("u_Model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(scale));
-		borderShader.SetMat4("u_Model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-
-		glStencilMask(0xFF);
-		glStencilFunc(GL_ALWAYS, 0, 0xFF);
-		glEnable(GL_DEPTH_TEST);
-
-		//// 现在绑定默认帧缓冲并使用附加的帧缓冲颜色纹理来绘制一个矩形平面
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//glDisable(GL_DEPTH_TEST); // 禁用深度测试，以免屏幕空间矩形因深度测试而被丢弃。
-		//// 清除所有相关的缓冲区
-		//glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT);
-
-		//screenShader.Use();
-		//glBindVertexArray(quadVAO);
-		//glBindTexture(GL_TEXTURE_2D, rbo);	// 将颜色附件纹理用作矩形平面的纹理
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-
+		geometryShader.Use();
+		
+		glDrawArrays(GL_POINTS, 0, 4);
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-	glDeleteVertexArrays(1, &cubeVAO);
-	//glDeleteVertexArrays(1, &planeVAO);
-	//glDeleteVertexArrays(1, &quadVAO);
-	glDeleteBuffers(1, &cubeVBO);
-	//glDeleteBuffers(1, &planeVBO);
-	//glDeleteBuffers(1, &quadVBO);
-	//glDeleteRenderbuffers(1, &rbo);
-	//glDeleteFramebuffers(1, &framebuffer);
-	glDeleteVertexArrays(1, &skyBoxVAO);
-	glDeleteBuffers(1, &skyBoxVBO);
 
 	glfwTerminate();
 	return 0;
