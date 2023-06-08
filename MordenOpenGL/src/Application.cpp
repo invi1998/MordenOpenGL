@@ -99,10 +99,10 @@ int main(void)
 	Shader geometryShader("asserts/shaders/passThrough.glsl");
 
 	float points[] = {
-		-0.5f,  0.5f, // 左上
-		 0.5f,  0.5f, // 右上
-		 0.5f, -0.5f, // 右下
-		-0.5f, -0.5f  // 左下
+	-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // 左上
+	 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // 右上
+	 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 右下
+	-0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // 左下
 	};
 
 	uint32_t VAO, VBO;
@@ -112,6 +112,11 @@ int main(void)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 	glBindVertexArray(VAO);
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
