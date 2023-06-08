@@ -94,6 +94,8 @@ int main(void)
 	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
+	// glEnable(GL_PROGRAM_POINT_SIZE);
+
 	Shader testShader("asserts/shaders/test.glsl");
 	Shader borderShader("asserts/shaders/border.glsl");
 	// Shader screenShader("asserts/shaders/screen.glsl");
@@ -387,6 +389,7 @@ int main(void)
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		testShader.SetMat4("u_Model", model);
 		testShader.SetVec3("u_CameraPos", camera.GetPosition());
+		testShader.SetVec2("u_ViewportSize", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);

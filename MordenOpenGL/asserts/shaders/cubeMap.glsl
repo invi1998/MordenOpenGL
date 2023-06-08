@@ -13,6 +13,7 @@ void main()
 {
 	TexCoords = a_Pos;
 	gl_Position = u_Projection * u_View * vec4(a_Pos, 1.0f);
+	// gl_PointSize = gl_Position.z;
 }
 
 // Æ¬¶Î×ÅÉ«Æ÷

@@ -38,6 +38,7 @@ in vec3 Position;
 uniform sampler2D u_Texture;
 uniform samplerCube u_SkyMap;
 uniform vec3 u_CameraPos;
+uniform vec2 u_ViewportSize;
 
 void main()
 {
@@ -55,5 +56,12 @@ void main()
 	// ’€…‰
 	vec3 R = refract(I, normalize(Normal), ratio);
 
-	FragColor = vec4(texture(u_SkyMap, R).rgb, 1.0);
+	if (gl_FragCoord.x < (u_ViewportSize.x * 0.5))
+	{
+		FragColor = texture(u_Texture, TexCoords);
+	}
+	else
+	{
+		FragColor = vec4(texture(u_SkyMap, R).rgb, 1.0);
+	}
 }
