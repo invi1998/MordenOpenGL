@@ -64,7 +64,8 @@ void Mesh::Draw(Shader& shader)
 			
 		}break;
 		}
-		glUniform1i(glGetUniformLocation(shader.GetRendererID(), name.c_str()), static_cast<GLint>(i));
+		// glUniform1i(glGetUniformLocation(shader.GetRendererID(), name.c_str()), static_cast<GLint>(i));
+		shader.SetInt(name, i);
 
 		//int activeTexture;
 		//glGetIntegerv(GL_ACTIVE_TEXTURE, &activeTexture);
@@ -79,7 +80,7 @@ void Mesh::Draw(Shader& shader)
 		//}
 
 		m_Textures[i].Bind(GL_TEXTURE_2D);
-		std::cout << "[1]" << glGetError() << '-' << m_Textures[i].GetRendererID() << '-' << std::endl; // ·µ»Ø 0 (ÎÞ´íÎó
+		// std::cout << "[1]" << glGetError() << '-' << m_Textures[i].GetRendererID() << '-' << std::endl; // ·µ»Ø 0 (ÎÞ´íÎó
 	}
 
 	// äÖÈ¾Íø¸ñ

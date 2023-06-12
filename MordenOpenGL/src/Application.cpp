@@ -89,34 +89,12 @@ int main(void)
 	glGetError();
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_STENCIL_TEST);
-	glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader geometryShader("asserts/shaders/passThrough.glsl");
+	Shader explodeShader("asserts/shaders/explode.glsl");
 
-	float points[] = {
-	-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // 左上
-	 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // 右上
-	 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // 右下
-	-0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // 左下
-	};
-
-	uint32_t VAO, VBO;
-
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-	glBindVertexArray(VAO);
-
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2*sizeof(float)));
-	glEnableVertexAttribArray(1);
+	Model nanosuit("asserts/model/nanosuit/nanosuit.obj", false);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -132,12 +110,18 @@ int main(void)
 
 		// 渲染指令
 		glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
-		geometryShader.Use();
-		
-		glDrawArrays(GL_POINTS, 0, 4);
+		glm::mat4 model{ 1.0f };
+		explodeShader.Use();
+		explodeShader.SetMat4("u_Projection", camera.GetProjection());
+		explodeShader.SetMat4("u_View", camera.GetViewMatrix());
+		explodeShader.SetMat4("u_Model", model);
+
+		explodeShader.SetFloat("time", static_cast<float>(glfwGetTime()));
+
+		nanosuit.Draw(explodeShader);
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）

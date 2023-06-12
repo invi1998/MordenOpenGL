@@ -65,6 +65,10 @@ Texture::Texture(const std::string& filePath, TEXTURE_TYPE type):m_FilePath(file
 
 		stbi_image_free(data);
 	}
+	else
+	{
+		std::cout << "纹理数据读取错误" << std::endl;
+	}
 }
 
 // 立方体贴图
