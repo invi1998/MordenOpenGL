@@ -94,6 +94,8 @@ int main(void)
 
 	Shader explodeShader("asserts/shaders/explode.glsl");
 	Shader skyBoxShader("asserts/shaders/cubeMap.glsl");
+	Shader modelShader("asserts/shaders/model.glsl");
+	Shader furShader("asserts/shaders/normalVisualization.glsl");
 
 	Model nanosuit("asserts/model/nanosuit/nanosuit.obj", false);
 
@@ -210,6 +212,22 @@ int main(void)
 		explodeShader.SetFloat("time", static_cast<float>(glfwGetTime()));
 
 		nanosuit.Draw(explodeShader);
+
+		modelShader.Use();
+		modelShader.SetMat4("u_Projection", camera.GetProjection());
+		modelShader.SetMat4("u_View", camera.GetViewMatrix());
+		model = glm::mat4{ 1.0f };
+		model = glm::translate(model, glm::vec3(10.f, 0.0f, 0.0f));
+		modelShader.SetMat4("u_Model", model);
+		nanosuit.Draw(modelShader);
+
+		furShader.Use();
+		furShader.SetMat4("u_Projection", camera.GetProjection());
+		furShader.SetMat4("u_View", camera.GetViewMatrix());
+		model = glm::mat4{ 1.0f };
+		model = glm::translate(model, glm::vec3(10.f, 0.0f, 0.0f));
+		furShader.SetMat4("u_Model", model);
+		nanosuit.Draw(furShader);
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）

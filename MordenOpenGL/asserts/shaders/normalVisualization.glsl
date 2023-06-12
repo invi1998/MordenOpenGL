@@ -25,48 +25,31 @@ void main()
 #version 330 core
 
 layout (triangles) in;
-layout (triangle_strip, max_vertices = 3) out;
+layout (line_strip, max_vertices = 6) out;
 
 in VS_OUT {
-    vec2 TexCoords;
+    vec3 normal;
 } gs_in[];
 
-uniform float time;
+const float MAGNITUDE = 0.2;
 
-out vec2 TexCoords;
+uniform mat4 u_Projection;
 
-vec4 explode(vec4 position, vec3 normal)
+void GenerateLine(int index)
 {
-    float magnitude = 200.0;
-    vec3 direction = normal * ((sin(time) + 1.0) / 2.0) * magnitude;
-    return position + vec4(direction, 1.0);
-}
-
-vec3 GetNormal()
-{
-    // 因为我们想要沿着三角形的法向量位移每个顶点，所以我们需要首先计算出这个法向量。
-    // 我们要做的就是计算垂直与三角形表面的向量，仅使用我们能够访问的三个顶点。
-    // 我们使用叉乘来获取垂直与其他两个向量的一个向量，我们能够获取两个平行与三角形表面的向量a和b，我们就能对这两个向量进行叉乘来获取法向量了
-    // 其实说白了，a和b就是这个三角形的两个边，然后使用叉乘就能计算出垂直于这两条边组成的平面的一个向量，就是我们要的三角形面法向量了
-    vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
-    vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-    return normalize(cross(a, b));
+    gl_Position = u_Projection * gl_in[index].gl_Position;
+    EmitVertex();
+    gl_Position = u_Projection * (gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0) * MAGNITUDE);
+    EmitVertex();
+    EndPrimitive();
 }
 
 void main()
 {
 
-    vec3 normal = GetNormal();
-    gl_Position = explode(gl_in[0].gl_Position, normal);
-    TexCoords = gs_in[0].TexCoords;
-    EmitVertex();
-    gl_Position = explode(gl_in[1].gl_Position, normal);
-    TexCoords = gs_in[1].TexCoords;
-    EmitVertex();
-    gl_Position = explode(gl_in[2].gl_Position, normal);
-    TexCoords = gs_in[2].TexCoords;
-    EmitVertex();
-    EndPrimitive();
+    GenerateLine(0); // first vertex normal
+    GenerateLine(1); // second vertex normal
+    GenerateLine(2); // third vertex normal
 }
 
 
@@ -75,11 +58,8 @@ void main()
 #version 330 core
 
 out vec4 FragColor;
-in vec2 TexCoords;
-
-uniform sampler2D texture_diffuse1;
 
 void main()
 {
-	FragColor = texture(texture_diffuse1, TexCoords);
+	FragColor = vec4(0.31, 0.93, 0.1, 1.0);
 }
