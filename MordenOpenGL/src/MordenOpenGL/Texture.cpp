@@ -80,7 +80,7 @@ Texture::Texture(const std::initializer_list<std::string>& filePaths) : m_CubeFa
 	int width, height, nrChannels;
 	for (unsigned int i = 0; i < m_CubeFacePath.size(); i++)
 	{
-		stbi_set_flip_vertically_on_load(1);
+		stbi_set_flip_vertically_on_load(0);
 		unsigned char* data = stbi_load(m_CubeFacePath[i].c_str(), &width, &height, &nrChannels, 0);
 		if (data)
 		{

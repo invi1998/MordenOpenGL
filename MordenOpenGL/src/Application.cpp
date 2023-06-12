@@ -93,8 +93,78 @@ int main(void)
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
 	Shader explodeShader("asserts/shaders/explode.glsl");
+	Shader skyBoxShader("asserts/shaders/cubeMap.glsl");
 
 	Model nanosuit("asserts/model/nanosuit/nanosuit.obj", false);
+
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+
+	// ÃÏø’∫–
+	uint32_t skyBoxVAO, skyBoxVBO;
+	glGenVertexArrays(1, &skyBoxVAO);
+	glGenBuffers(1, &skyBoxVBO);
+	glBindVertexArray(skyBoxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyBoxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+	Texture cubeMapTexture({
+			"asserts/textures/skybox/right.jpg",
+			 "asserts/textures/skybox/left.jpg",
+			"asserts/textures/skybox/top.jpg",
+			"asserts/textures/skybox/bottom.jpg",
+			 "asserts/textures/skybox/front.jpg",
+			 "asserts/textures/skybox/back.jpg"
+		});
+
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+	skyBoxShader.Use();
+	skyBoxShader.SetInt("u_Texture", 0);
 
 	// ‰÷»æ—≠ª∑
 	while(!glfwWindowShouldClose(window))
@@ -112,6 +182,24 @@ int main(void)
 		glClearColor(0.12f, 0.12f, 0.15f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
+
+		// ÃÏø’∫–ªÊ÷∆
+		glDepthMask(GL_FALSE); // Ω˚÷π–¥»Î…Ó∂»ª∫≥Â«¯
+		skyBoxShader.Use();
+		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+		skyBoxShader.SetMat4("u_View", view);
+		// skyBoxShader.SetMat4("u_View", camera.GetViewMatrix());
+		skyBoxShader.SetMat4("u_Projection", camera.GetProjection());
+		glm::mat4 projection = glm::perspective(glm::radians(5000.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
+		skyBoxShader.SetMat4("u_Projection", projection);
+		// ÃÏø’∫–
+		glBindVertexArray(skyBoxVAO);
+		glActiveTexture(GL_TEXTURE0);
+		cubeMapTexture.Bind(GL_TEXTURE_CUBE_MAP);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		// glDepthFunc(GL_LESS);
+		glDepthMask(GL_TRUE);  // ª÷∏¥…Ó∂»ª∫≥Â«¯–¥»Î◊¥Ã¨
 
 		glm::mat4 model{ 1.0f };
 		explodeShader.Use();
