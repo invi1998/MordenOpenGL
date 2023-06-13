@@ -162,18 +162,20 @@ int main(void)
 		// glClear(GL_COLOR_BUFFER_BIT);
 
 		instanceShader.Use();
-		for (unsigned int i = 0; i < 100; i++)
+		/*for (unsigned int i = 0; i < 100; i++)
 		{
 			std::stringstream ss;
 			std::string index;
 			ss << i;
 			index = ss.str();
 			instanceShader.SetVec2(("u_Offsets[" + index + "]").c_str(), translations[i]);
-		}
+		}*/
 
 		glBindVertexArray(quadVAO);
 
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+
+		glBindVertexArray(0);
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
