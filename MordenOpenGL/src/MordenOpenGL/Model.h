@@ -11,6 +11,10 @@ public:
 
 	void Draw(Shader& shader);
 
+	std::vector<Mesh> GetMeshs() const { return m_MeshVec; }
+
+	std::vector<Texture> GetLoadedTexture() const { return m_TextureLoaded; }
+
 private:
 	void LoadModel();
 	void ProcessNode(aiNode* node, const aiScene* scene);

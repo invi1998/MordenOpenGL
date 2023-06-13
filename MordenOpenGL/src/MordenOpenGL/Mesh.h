@@ -40,6 +40,10 @@ public:
 
 	// ∂•µ„‰÷»æ
 	void Draw(Shader& shader);
+	uint32_t GetVAO() const { return VAO; }
+	uint32_t GetVBO() const { return VBO; }
+	uint32_t GetEBO() const { return EBO; }
+	uint32_t GetIndicesSize() const { return m_Indices.size(); }
 
 private:
 	void SetupMesh();

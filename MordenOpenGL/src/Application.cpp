@@ -92,55 +92,75 @@ int main(void)
 
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader instanceShader("asserts/shaders/instancing.glsl");
+	Shader planShader("asserts/shaders/plant.glsl");
+	Shader rockShader("asserts/shaders/rock.glsl");
 
-	float quadVertices[] = {
-		// 位置          // 颜色
-		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-		-0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
+	Model plant("asserts/model/planet/planet.obj", true);
+	Model rock("asserts/model/rock/rock.obj", true);
 
-		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
-		 0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
-		 0.05f,  0.05f,  0.0f, 1.0f, 1.0f
-	};
 
-	glm::vec2 translations[100];
-	int index = 0;
-	const float offset = 0.1f;
-	for (int y = -10; y < 10; y+= 2)
+	unsigned int amount = 10000;
+	glm::mat4* modelMatrices;
+	modelMatrices = new glm::mat4[amount];
+	std::srand(glfwGetTime());	// 初始化随机种子
+	float radius = 50.f;
+	float offset = 2.5f;
+	for (unsigned int i = 0; i < amount; i++)
 	{
-		for (int x = -10; x < 10; x += 2)
-		{
-			glm::vec2 translation;
-			translation.x = static_cast<float>(x) / 10.f + offset;
-			translation.y = static_cast<float>(y) / 10.f + offset;
-			translations[index++] = translation;
-		}
+		glm::mat4 model;
+		// 1。位移：分布在半径为radius的圆形上，偏移范围是[-offset, offset]
+		float angle = (float)i / (float)amount * 360.f;
+		float displacement = (std::rand() % (int)(2 * offset * 100)) / 100.f - offset;
+		float x = sin(angle) * radius + displacement;
+		displacement = (std::rand() % (int)(2 * offset * 100)) / 100.f - offset;
+		float y = displacement * 0.4f;		// 让行星带的高度比x和z的宽度要小
+		displacement = (std::rand() % (int)(2 * offset * 100)) / 100.f - offset;
+		float z = cos(angle) * radius + displacement;
+		model = glm::translate(model, glm::vec3(x, y, z));
+
+		// 2.缩放：在0.05和0.25之间缩放
+		float scale = (std::rand() % 20) / 100.f + 0.05;
+		model = glm::scale(model, glm::vec3(scale));
+
+		// 3.旋转：绕着一个（半）随机悬着的旋转轴向量进行随机的旋转
+		float rotAngle = (std::rand() % 360);
+		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+		// 4.添加到矩阵的数组中
+		modelMatrices[i] = model; 
 	}
 
-	uint32_t instanceVBO;
-	glGenBuffers(1, &instanceVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	uint32_t buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
 
-	uint32_t quadVAO, quadVBO;
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-	// 设置实例数据
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glVertexAttribDivisor(2, 1);
+	// 将变换矩阵设置为实例顶点属性（使用除数 1）
+	// 注意：我们在一定程度上作弊，通过获取模型网格的现在公开声明的 VAO，并添加新的 glVertexAttribPointer
+	// 通常你会希望以更有组织的方式完成这个过程，但出于学习目的，这样做就足够了。
+	for (auto& mesh: rock.GetMeshs())
+	{
+		uint32_t VAO = mesh.GetVAO();
+		glBindVertexArray(VAO);
+		// // 为矩阵（4 个 vec4）设置属性指针
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+		glEnableVertexAttribArray(5);
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+		glVertexAttribDivisor(3, 1);
+		glVertexAttribDivisor(4, 1);
+		glVertexAttribDivisor(5, 1);
+		glVertexAttribDivisor(6, 1);
+
+		glBindVertexArray(0);
+
+	}
+	
 
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
@@ -161,21 +181,32 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
-		instanceShader.Use();
-		/*for (unsigned int i = 0; i < 100; i++)
+		// 配置变换矩阵
+		rockShader.Use();
+		rockShader.SetMat4("u_Projection", camera.GetProjection());
+		rockShader.SetMat4("u_View", camera.GetViewMatrix());
+
+		// 绘制行星
+		planShader.Use();
+		planShader.SetMat4("u_Projection", camera.GetProjection());
+		planShader.SetMat4("u_View", camera.GetViewMatrix());
+		glm::mat4 mmodel{ 1.0f };
+		mmodel = glm::translate(mmodel, glm::vec3(0.0f, -3.0f, 0.0f));
+		mmodel = glm::scale(mmodel, glm::vec3(4.0f, 4.0f, 4.0f));
+		planShader.SetMat4("u_Model", mmodel);
+		plant.Draw(planShader);
+
+		// 绘制小行星带
+		rockShader.Use();
+		rockShader.SetInt("u_DiffuseTexture1", 0);
+		glActiveTexture(GL_TEXTURE0);
+		rock.GetLoadedTexture()[0].Bind(GL_TEXTURE_2D);
+		for (auto &mesh : rock.GetMeshs())
 		{
-			std::stringstream ss;
-			std::string index;
-			ss << i;
-			index = ss.str();
-			instanceShader.SetVec2(("u_Offsets[" + index + "]").c_str(), translations[i]);
-		}*/
-
-		glBindVertexArray(quadVAO);
-
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
-
-		glBindVertexArray(0);
+			glBindVertexArray(mesh.GetVAO());
+			glDrawElementsInstanced(GL_TRIANGLES, static_cast<uint32_t>(mesh.GetIndicesSize()), GL_UNSIGNED_INT, 0, amount);
+			glBindVertexArray(0);
+		}
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
