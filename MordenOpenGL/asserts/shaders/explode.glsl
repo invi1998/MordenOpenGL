@@ -2,10 +2,12 @@
 #version 330 core
 
 layout (location = 0) in vec3 a_Pos;
+layout (location = 1) in vec3 a_Normal;
 layout (location = 2) in vec2 a_TexCoords;
 
 out VS_OUT
 {
+    vec3 Normal;
     vec2 TexCoords;
 } vs_out;
 
@@ -15,6 +17,7 @@ uniform mat4 u_Model;
 
 void main()
 {
+    vs_out.Normal = a_Normal;
 	vs_out.TexCoords = a_TexCoords;
     gl_Position = u_Projection * u_View * u_Model * vec4(a_Pos, 1.0);
 }
@@ -26,13 +29,16 @@ void main()
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
-in VS_OUT {
+in VS_OUT
+{
+    vec3 Normal;
     vec2 TexCoords;
 } gs_in[];
 
 uniform float time;
 
 out vec2 TexCoords;
+out vec3 Normal;
 
 vec4 explode(vec4 position, vec3 normal)
 {
@@ -54,16 +60,19 @@ vec3 GetNormal()
 
 void main()
 {
-
+    
     vec3 normal = GetNormal();
     gl_Position = explode(gl_in[0].gl_Position, normal);
     TexCoords = gs_in[0].TexCoords;
+    Normal = gs_in[0].Normal;
     EmitVertex();
     gl_Position = explode(gl_in[1].gl_Position, normal);
     TexCoords = gs_in[1].TexCoords;
+    Normal = gs_in[1].Normal;
     EmitVertex();
     gl_Position = explode(gl_in[2].gl_Position, normal);
     TexCoords = gs_in[2].TexCoords;
+    Normal = gs_in[2].Normal;
     EmitVertex();
     EndPrimitive();
 }
@@ -75,10 +84,11 @@ void main()
 
 out vec4 FragColor;
 in vec2 TexCoords;
+in vec3 Normal;
 
 uniform sampler2D texture_diffuse1;
 
 void main()
 {
-	FragColor = texture(texture_diffuse1, TexCoords);
+	FragColor = texture(texture_diffuse1, TexCoords) + vec4(Normal, 1.0);
 }
