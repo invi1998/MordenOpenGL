@@ -92,81 +92,57 @@ int main(void)
 
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader explodeShader("asserts/shaders/explode.glsl");
-	Shader skyBoxShader("asserts/shaders/cubeMap.glsl");
-	Shader modelShader("asserts/shaders/model.glsl");
-	Shader furShader("asserts/shaders/normalVisualization.glsl");
+	Shader instanceShader("asserts/shaders/instancing.glsl");
 
-	Model nanosuit("asserts/model/nanosuit/nanosuit.obj", false);
+	float quadVertices[] = {
+		// 位置          // 颜色
+		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+		-0.05f, -0.05f,  0.0f, 0.0f, 1.0f,
 
-	float skyboxVertices[] = {
-		// positions          
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		-1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f
+		-0.05f,  0.05f,  1.0f, 0.0f, 0.0f,
+		 0.05f, -0.05f,  0.0f, 1.0f, 0.0f,
+		 0.05f,  0.05f,  0.0f, 1.0f, 1.0f
 	};
 
-	// 天空盒
-	uint32_t skyBoxVAO, skyBoxVBO;
-	glGenVertexArrays(1, &skyBoxVAO);
-	glGenBuffers(1, &skyBoxVBO);
-	glBindVertexArray(skyBoxVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, skyBoxVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glm::vec2 translations[100];
+	int index = 0;
+	const float offset = 0.1f;
+	for (int y = -10; y < 10; y+= 2)
+	{
+		for (int x = -10; x < 10; x += 2)
+		{
+			glm::vec2 translation;
+			translation.x = static_cast<float>(x) / 10.f + offset;
+			translation.y = static_cast<float>(y) / 10.f + offset;
+			translations[index++] = translation;
+		}
+	}
 
-	Texture cubeMapTexture({
-			"asserts/textures/skybox/right.jpg",
-			 "asserts/textures/skybox/left.jpg",
-			"asserts/textures/skybox/top.jpg",
-			"asserts/textures/skybox/bottom.jpg",
-			 "asserts/textures/skybox/front.jpg",
-			 "asserts/textures/skybox/back.jpg"
-		});
+	uint32_t instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	uint32_t quadVAO, quadVBO;
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+	// 设置实例数据
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(2, 1);
 
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-
-	skyBoxShader.Use();
-	skyBoxShader.SetInt("u_Texture", 0);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -185,49 +161,19 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
-		// 天空盒绘制
-		glDepthMask(GL_FALSE); // 禁止写入深度缓冲区
-		skyBoxShader.Use();
-		glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-		skyBoxShader.SetMat4("u_View", view);
-		// skyBoxShader.SetMat4("u_View", camera.GetViewMatrix());
-		skyBoxShader.SetMat4("u_Projection", camera.GetProjection());
-		glm::mat4 projection = glm::perspective(glm::radians(5000.0f), static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT), 0.1f, 1000.0f);
-		skyBoxShader.SetMat4("u_Projection", projection);
-		// 天空盒
-		glBindVertexArray(skyBoxVAO);
-		glActiveTexture(GL_TEXTURE0);
-		cubeMapTexture.Bind(GL_TEXTURE_CUBE_MAP);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		// glDepthFunc(GL_LESS);
-		glDepthMask(GL_TRUE);  // 恢复深度缓冲区写入状态
+		instanceShader.Use();
+		for (unsigned int i = 0; i < 100; i++)
+		{
+			std::stringstream ss;
+			std::string index;
+			ss << i;
+			index = ss.str();
+			instanceShader.SetVec2(("u_Offsets[" + index + "]").c_str(), translations[i]);
+		}
 
-		glm::mat4 model{ 1.0f };
-		explodeShader.Use();
-		explodeShader.SetMat4("u_Projection", camera.GetProjection());
-		explodeShader.SetMat4("u_View", camera.GetViewMatrix());
-		explodeShader.SetMat4("u_Model", model);
+		glBindVertexArray(quadVAO);
 
-		explodeShader.SetFloat("time", static_cast<float>(glfwGetTime()));
-
-		nanosuit.Draw(explodeShader);
-
-		modelShader.Use();
-		modelShader.SetMat4("u_Projection", camera.GetProjection());
-		modelShader.SetMat4("u_View", camera.GetViewMatrix());
-		model = glm::mat4{ 1.0f };
-		model = glm::translate(model, glm::vec3(10.f, 0.0f, 0.0f));
-		modelShader.SetMat4("u_Model", model);
-		nanosuit.Draw(modelShader);
-
-		furShader.Use();
-		furShader.SetMat4("u_Projection", camera.GetProjection());
-		furShader.SetMat4("u_View", camera.GetViewMatrix());
-		model = glm::mat4{ 1.0f };
-		model = glm::translate(model, glm::vec3(10.f, 0.0f, 0.0f));
-		furShader.SetMat4("u_Model", model);
-		nanosuit.Draw(furShader);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
