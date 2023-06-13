@@ -60,7 +60,7 @@ private:
     float m_FOV = 45.0f;
     float m_AspectRatio = 1.3333f;
     float m_NearClip = 0.1f;
-    float m_FarClip = 1000.0f;
+    float m_FarClip = 10000.0f;
 
     glm::mat4 m_ViewMatrix;
     glm::mat4 m_Projection{ 1.0f };

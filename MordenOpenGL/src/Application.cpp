@@ -99,7 +99,7 @@ int main(void)
 	Model rock("asserts/model/rock/rock.obj", true);
 
 
-	unsigned int amount = 10000;
+	unsigned int amount = 1000;
 	glm::mat4* modelMatrices;
 	modelMatrices = new glm::mat4[amount];
 	std::srand(glfwGetTime());	// 初始化随机种子
@@ -196,17 +196,19 @@ int main(void)
 		planShader.SetMat4("u_Model", mmodel);
 		plant.Draw(planShader);
 
-		// 绘制小行星带
-		rockShader.Use();
-		rockShader.SetInt("u_DiffuseTexture1", 0);
-		glActiveTexture(GL_TEXTURE0);
-		rock.GetLoadedTexture()[0].Bind(GL_TEXTURE_2D);
-		for (auto &mesh : rock.GetMeshs())
-		{
-			glBindVertexArray(mesh.GetVAO());
-			glDrawElementsInstanced(GL_TRIANGLES, static_cast<uint32_t>(mesh.GetIndicesSize()), GL_UNSIGNED_INT, 0, amount);
-			glBindVertexArray(0);
-		}
+		//// 绘制小行星带
+		//rockShader.Use();
+		//rockShader.SetInt("u_DiffuseTexture1", 0);
+		//glActiveTexture(GL_TEXTURE0);
+		//rock.GetLoadedTexture()[0].Bind(GL_TEXTURE_2D);
+		//// std::cout << "[1]" << glGetError() << '-' << rock.GetLoadedTexture()[0].GetRendererID() << '-' << std::endl; // 返回 0 (无错误
+		//for (auto &mesh : rock.GetMeshs())
+		//{
+		//	// mesh.Draw(rockShader);
+		//	glBindVertexArray(mesh.GetVAO());
+		//	glDrawElementsInstanced(GL_TRIANGLES, static_cast<uint32_t>(mesh.GetIndicesSize()), GL_UNSIGNED_INT, 0, amount);
+		//	glBindVertexArray(0);
+		//}
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
