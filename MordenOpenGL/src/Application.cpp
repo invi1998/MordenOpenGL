@@ -181,6 +181,8 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_COLOR_BUFFER_BIT);
 
+		while (glGetError() != GL_NO_ERROR);  // 清空错误消息队列
+
 		// 配置变换矩阵
 		rockShader.Use();
 		rockShader.SetMat4("u_Projection", camera.GetProjection());

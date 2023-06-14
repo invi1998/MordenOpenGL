@@ -79,8 +79,16 @@ void Mesh::Draw(Shader& shader)
 		//	std::cout << "其他纹理单元是当前激活的纹理单元" << std::endl;
 		//}
 
+		while (glGetError() != GL_NO_ERROR);  // 清空错误消息队列
 		m_Textures[i].Bind(GL_TEXTURE_2D);
-		// std::cout << "[1]" << glGetError() << '-' << m_Textures[i].GetRendererID() << '-' << std::endl; // 返回 0 (无错误
+		GLenum error;
+		while ((error = glGetError()) != GL_NO_ERROR) {
+			std::cout << "OpenGL error: " << error << std::endl;  // 输出错误信息
+		}
+
+		// std::cout << glGetError() << std::endl;
+		// std::cout << m_Textures[i].GetRendererID() << std::endl;
+		// std::cout << "[" << i << "]" << glGetError() << m_Textures[i].GetRendererID() << std::endl; // 返回 0 (无错误
 	}
 
 	// 渲染网格

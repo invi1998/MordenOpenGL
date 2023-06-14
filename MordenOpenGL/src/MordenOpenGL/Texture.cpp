@@ -56,6 +56,8 @@ Texture::Texture(const std::string& filePath, TEXTURE_TYPE type):m_FilePath(file
 
 		// glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
