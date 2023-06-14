@@ -98,7 +98,10 @@ int main(void)
 
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader shader("asserts/shaders/blinnPhong.glsl");
+	Shader simpleDepthShader("asserts/shaders/shadowMappingDepth.glsl");
+	Shader debugDepthShader("asserts/shaders/debugQuad.glsl");
+
+	Texture woodTexture("asserts/textures/wood.png", TEXTURE_TYPE::DIFFUSE);
 
 	float planeVertices[] = {
 		// positions            // normals         // texcoords
