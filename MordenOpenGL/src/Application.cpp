@@ -28,6 +28,8 @@ float lastFrame = 0.0f;
 
 // lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+bool blinn = false;
+bool blinnKeyPressed = false;
 
 Camera camera;
 bool firstMouse = true;
@@ -92,75 +94,35 @@ int main(void)
 
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader planShader("asserts/shaders/plant.glsl");
-	Shader rockShader("asserts/shaders/rock.glsl");
+	Shader shader("asserts/shaders/blinnPhong.glsl");
 
-	Model plant("asserts/model/planet/planet.obj", true);
-	Model rock("asserts/model/rock/rock.obj", true);
+	float planeVertices[] = {
+		// positions            // normals         // texcoords
+		 10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+		-10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
 
+		 10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,   0.0f, 10.0f,
+		 10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
+	};
 
-	unsigned int amount = 1000;
-	glm::mat4* modelMatrices;
-	modelMatrices = new glm::mat4[amount];
-	std::srand(glfwGetTime());	// 初始化随机种子
-	float radius = 50.f;
-	float offset = 2.5f;
-	for (unsigned int i = 0; i < amount; i++)
-	{
-		glm::mat4 model;
-		// 1。位移：分布在半径为radius的圆形上，偏移范围是[-offset, offset]
-		float angle = (float)i / (float)amount * 360.f;
-		float displacement = (std::rand() % (int)(2 * offset * 100)) / 100.f - offset;
-		float x = sin(angle) * radius + displacement;
-		displacement = (std::rand() % (int)(2 * offset * 100)) / 100.f - offset;
-		float y = displacement * 0.4f;		// 让行星带的高度比x和z的宽度要小
-		displacement = (std::rand() % (int)(2 * offset * 100)) / 100.f - offset;
-		float z = cos(angle) * radius + displacement;
-		model = glm::translate(model, glm::vec3(x, y, z));
+	// plane VAO
+	unsigned int planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glBindVertexArray(0);
 
-		// 2.缩放：在0.05和0.25之间缩放
-		float scale = (std::rand() % 20) / 100.f + 0.05;
-		model = glm::scale(model, glm::vec3(scale));
-
-		// 3.旋转：绕着一个（半）随机悬着的旋转轴向量进行随机的旋转
-		float rotAngle = (std::rand() % 360);
-		model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-
-		// 4.添加到矩阵的数组中
-		modelMatrices[i] = model; 
-	}
-
-	uint32_t buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
-
-	// 将变换矩阵设置为实例顶点属性（使用除数 1）
-	// 注意：我们在一定程度上作弊，通过获取模型网格的现在公开声明的 VAO，并添加新的 glVertexAttribPointer
-	// 通常你会希望以更有组织的方式完成这个过程，但出于学习目的，这样做就足够了。
-	for (auto& mesh: rock.GetMeshs())
-	{
-		uint32_t VAO = mesh.GetVAO();
-		glBindVertexArray(VAO);
-		// // 为矩阵（4 个 vec4）设置属性指针
-		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
-		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
-		glEnableVertexAttribArray(5);
-		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
-		glEnableVertexAttribArray(6);
-		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
-
-		glVertexAttribDivisor(3, 1);
-		glVertexAttribDivisor(4, 1);
-		glVertexAttribDivisor(5, 1);
-		glVertexAttribDivisor(6, 1);
-
-		glBindVertexArray(0);
-
-	}
-	
+	Texture floorTexture("asserts/textures/wood.png", TEXTURE_TYPE::DIFFUSE);
 
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
@@ -184,33 +146,21 @@ int main(void)
 		while (glGetError() != GL_NO_ERROR);  // 清空错误消息队列
 
 		// 配置变换矩阵
-		rockShader.Use();
-		rockShader.SetMat4("u_Projection", camera.GetProjection());
-		rockShader.SetMat4("u_View", camera.GetViewMatrix());
+		shader.Use();
+		shader.SetMat4("u_Projection", camera.GetProjection());
+		shader.SetMat4("u_View", camera.GetViewMatrix());
 
-		// 绘制行星
-		planShader.Use();
-		planShader.SetMat4("u_Projection", camera.GetProjection());
-		planShader.SetMat4("u_View", camera.GetViewMatrix());
-		glm::mat4 mmodel{ 1.0f };
-		mmodel = glm::translate(mmodel, glm::vec3(0.0f, -3.0f, 0.0f));
-		mmodel = glm::scale(mmodel, glm::vec3(4.0f, 4.0f, 4.0f));
-		planShader.SetMat4("u_Model", mmodel);
-		plant.Draw(planShader);
+		// set light uniforms
+		shader.SetVec3("u_ViewPos", camera.GetPosition());
+		shader.SetVec3("u_LightPos", lightPos);
+		shader.SetInt("u_Blinn", blinn);
+		// floor
+		glBindVertexArray(planeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		floorTexture.Bind(GL_TEXTURE_2D);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		//// 绘制小行星带
-		//rockShader.Use();
-		//rockShader.SetInt("u_DiffuseTexture1", 0);
-		//glActiveTexture(GL_TEXTURE0);
-		//rock.GetLoadedTexture()[0].Bind(GL_TEXTURE_2D);
-		//// std::cout << "[1]" << glGetError() << '-' << rock.GetLoadedTexture()[0].GetRendererID() << '-' << std::endl; // 返回 0 (无错误
-		//for (auto &mesh : rock.GetMeshs())
-		//{
-		//	// mesh.Draw(rockShader);
-		//	glBindVertexArray(mesh.GetVAO());
-		//	glDrawElementsInstanced(GL_TRIANGLES, static_cast<uint32_t>(mesh.GetIndicesSize()), GL_UNSIGNED_INT, 0, amount);
-		//	glBindVertexArray(0);
-		//}
+		std::cout << (blinn ? "Blinn-Phong" : "Phong") << std::endl;
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
@@ -242,6 +192,16 @@ void processInput(GLFWwindow* window)
 	{
 		// 摄像机
 		camera.OnUpdate(window, deltaTime);
+
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS && !blinnKeyPressed)
+		{
+			blinn = !blinn;
+			blinnKeyPressed = true;
+		}
+		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
+		{
+			blinnKeyPressed = false;
+		}
 	}
 }
 
