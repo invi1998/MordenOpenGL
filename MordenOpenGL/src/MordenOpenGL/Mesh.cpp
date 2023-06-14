@@ -31,7 +31,7 @@ void Mesh::Draw(Shader& shader)
 	uint32_t normalNr = 1;
 	uint32_t heightNr = 1;
 
-	// shader.Use();
+	shader.Use();
 	// std::cout << "[-2]" << glGetError() << std::endl; // ·µ»Ø 0 (ÎÞ´íÎó
 
 	for (uint32_t i = 0; i < m_Textures.size(); i++)

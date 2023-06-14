@@ -7,7 +7,6 @@
 Texture::Texture(const std::string& filePath, TEXTURE_TYPE type):m_FilePath(filePath), m_Type(type)
 {
 	glGenTextures(1, &m_RendererID);
-	glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(1);
@@ -71,6 +70,7 @@ Texture::Texture(const std::string& filePath, TEXTURE_TYPE type):m_FilePath(file
 	else
 	{
 		std::cout << "纹理数据读取错误" << std::endl;
+		stbi_image_free(data);
 	}
 }
 
