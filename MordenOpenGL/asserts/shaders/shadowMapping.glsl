@@ -43,7 +43,7 @@ in VS_OUT
 } fs_in;
 
 uniform sampler2D u_DiffuseTexture;
-uniform sampler2D u_ShaderMap;
+uniform sampler2D u_ShadowMap;
 
 uniform vec3 u_LightPos;
 uniform vec3 u_ViewPos;
@@ -59,7 +59,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	projCoords = projCoords * 0.5 + 0.5;
 
 	// 获取从光的位置最近的深度
-	float closestDepth = texture(u_ShaderMap, projCoords.xy).r;
+	float closestDepth = texture(u_ShadowMap, projCoords.xy).r;
 
 	// 获取投影向量的z坐标，它等于来自光的透视角的片段的深度
 	float currentDepth = projCoords.z;

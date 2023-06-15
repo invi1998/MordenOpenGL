@@ -109,6 +109,7 @@ int main(void)
 	Shader shadowMappingShader("asserts/shaders/shadowMapping.glsl");
 
 	Texture woodTexture("asserts/textures/wood.png", TEXTURE_TYPE::DIFFUSE);
+	Texture planeTexture("asserts/textures/R-C.jpg", TEXTURE_TYPE::DIFFUSE);
 
 	float planeVertices[] = {
 		// positions            // normals         // texcoords
@@ -163,7 +164,7 @@ int main(void)
 
 	shadowMappingShader.Use();
 	shadowMappingShader.SetInt("u_DiffuseTexture", 0);
-	shadowMappingShader.SetInt("u_ShaderMap", 1);
+	shadowMappingShader.SetInt("u_ShadowMap", 1);
 	debugDepthShader.Use();
 	debugDepthShader.SetInt("u_DepthMap", 0);
 
@@ -222,14 +223,15 @@ int main(void)
 		woodTexture.Bind(GL_TEXTURE_2D);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, depthMap);
+		renderScene(shadowMappingShader);
 
-		// 将深度图渲染到四边形上，用于可视化调试
-		debugDepthShader.Use();
-		debugDepthShader.SetFloat("u_NearPlane", near_plane);
-		debugDepthShader.SetFloat("u_FarPlane", far_plane);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		renderQuad();
+		//// 将深度图渲染到四边形上，用于可视化调试
+		//debugDepthShader.Use();
+		//debugDepthShader.SetFloat("u_NearPlane", near_plane);
+		//debugDepthShader.SetFloat("u_FarPlane", far_plane);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, depthMap);
+		//renderQuad();
 
 		
 		// 检查并调用事件，交换缓冲
