@@ -100,10 +100,13 @@ int main(void)
 
 	glEnable(GL_DEPTH_TEST);
 
+	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
 	// glEnable(GL_PROGRAM_POINT_SIZE);
 
 	Shader simpleDepthShader("asserts/shaders/shadowMappingDepth.glsl");
 	Shader debugDepthShader("asserts/shaders/debugQuad.glsl");
+	Shader shadowMappingShader("asserts/shaders/shadowMapping.glsl");
 
 	Texture woodTexture("asserts/textures/wood.png", TEXTURE_TYPE::DIFFUSE);
 
@@ -158,7 +161,13 @@ int main(void)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glBindVertexArray(0);
 
-	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+	shadowMappingShader.Use();
+	shadowMappingShader.SetInt("u_DiffuseTexture", 0);
+	shadowMappingShader.SetInt("u_ShaderMap", 1);
+	debugDepthShader.Use();
+	debugDepthShader.SetInt("u_DepthMap", 0);
+
+	glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -184,7 +193,7 @@ int main(void)
 		glm::mat4 lightSpaceMatrix;
 		float near_plane = 1.0f, far_plane = 7.5f;
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-		lightView = glm::lookAt(lightPos, glm::vec3{ -1.0f }, glm::vec3{ -2.0f, 2.0f, 0.0f });
+		lightView = glm::lookAt(lightPos, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 2.0f, 0.0f });
 		lightSpaceMatrix = lightProjection * lightView;
 		// 从光源的视角渲染场景。
 		simpleDepthShader.Use();
@@ -201,6 +210,18 @@ int main(void)
 		// 重置视口大小
 		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		shadowMappingShader.Use();
+		shadowMappingShader.SetMat4("u_Projection", camera.GetProjection());
+		shadowMappingShader.SetMat4("u_View", camera.GetViewMatrix());
+		shadowMappingShader.SetMat4("u_LightSpaceMatrix", lightSpaceMatrix);
+		shadowMappingShader.SetVec3("u_LightPos", lightPos);
+		shadowMappingShader.SetVec3("u_ViewPos", camera.GetPosition());
+
+		glActiveTexture(GL_TEXTURE0);
+		woodTexture.Bind(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
 
 		// 将深度图渲染到四边形上，用于可视化调试
 		debugDepthShader.Use();
