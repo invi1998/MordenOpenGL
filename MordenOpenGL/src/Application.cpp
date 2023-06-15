@@ -22,6 +22,8 @@
 static uint32_t SCR_WIDTH = 800;
 static uint32_t SCR_HEIGHT = 600;
 
+uint32_t planeVAO;
+
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
@@ -51,6 +53,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void renderCube();
 
 void renderQuad();
+
+void renderScene(Shader& shader);
 
 int main(void)
 {
@@ -116,7 +120,7 @@ int main(void)
 
 	// 创建一个帧缓冲对象
 	GLuint depthMapFBO;
-	glGenFramebuffers(1, &depthMapFBO);
+	glGenFramebuffers(1, &depthMapFBO); 
 
 	// 创建一个2D纹理，提供给帧缓冲的深度缓冲使用
 	const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -139,6 +143,21 @@ int main(void)
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	// plane VAO
+	uint32_t planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glBindVertexArray(0);
+
 	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
 	// 渲染循环
@@ -160,22 +179,37 @@ int main(void)
 
 		while (glGetError() != GL_NO_ERROR);  // 清空错误消息队列
 
-		// 配置变换矩阵
-		shader.Use();
-		shader.SetMat4("u_Projection", camera.GetProjection());
-		shader.SetMat4("u_View", camera.GetViewMatrix());
+		// 1:将场景深度渲染到纹理中（从光的视角）
+		glm::mat4 lightProjection, lightView;
+		glm::mat4 lightSpaceMatrix;
+		float near_plane = 1.0f, far_plane = 7.5f;
+		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+		lightView = glm::lookAt(lightPos, glm::vec3{ -1.0f }, glm::vec3{ -2.0f, 2.0f, 0.0f });
+		lightSpaceMatrix = lightProjection * lightView;
+		// 从光源的视角渲染场景。
+		simpleDepthShader.Use();
+		simpleDepthShader.SetMat4("u_LightSpaceMatrix", lightSpaceMatrix);
 
-		// set light uniforms
-		shader.SetVec3("u_ViewPos", camera.GetPosition());
-		shader.SetVec3("u_LightPos", lightPos);
-		shader.SetInt("u_Blinn", blinn);
-		// floor
-		glBindVertexArray(planeVAO);
+		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
-		floorTexture.Bind(GL_TEXTURE_2D);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		woodTexture.Bind(GL_TEXTURE_2D);
+		renderScene(simpleDepthShader);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		std::cout << (blinn ? "Blinn-Phong" : "Phong") << std::endl;
+		// 重置视口大小
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// 将深度图渲染到四边形上，用于可视化调试
+		debugDepthShader.Use();
+		debugDepthShader.SetFloat("u_NearPlane", near_plane);
+		debugDepthShader.SetFloat("u_FarPlane", far_plane);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
+		renderQuad();
+
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
@@ -189,6 +223,33 @@ int main(void)
 }
 
 // ---------------------------------------------------------------------
+void renderScene(Shader& shader)
+{
+	// floor
+	glm::mat4 model = glm::mat4(1.0f);
+	shader.SetMat4("u_Model", model);
+	glBindVertexArray(planeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	// cubes
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	shader.SetMat4("u_Model", model);
+	renderCube();
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+	model = glm::scale(model, glm::vec3(0.5f));
+	shader.SetMat4("u_Model", model);
+	renderCube();
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 2.0));
+	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+	model = glm::scale(model, glm::vec3(0.25));
+	shader.SetMat4("u_Model", model);
+	renderCube();
+}
+
+
 uint32_t cubeVAO = 0;
 uint32_t cubeVBO = 0;
 void renderCube()
