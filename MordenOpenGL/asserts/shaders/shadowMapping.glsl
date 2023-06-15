@@ -48,6 +48,8 @@ uniform sampler2D u_ShadowMap;
 uniform vec3 u_LightPos;
 uniform vec3 u_ViewPos;
 
+uniform bool shadows;
+
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
 	// 执行透视除法
@@ -64,8 +66,36 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 	// 获取投影向量的z坐标，它等于来自光的透视角的片段的深度
 	float currentDepth = projCoords.z;
 
+	// 计算偏差（基于深度图分辨率和坡度）
+	vec3 normal = normalize(fs_in.Normal);
+	vec3 lightDir = normalize(u_LightPos - fs_in.FragPos);
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+
 	// 简单检查currentDepth是否高于closetDepth，如果是，那么片段就在阴影中。
-	float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+	// float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+
+	// PCF
+	// 因为深度贴图有一个固定的分辨率，多个片段对应于一个纹理像素
+	// 结果就是多个片段会从深度贴图的同一个深度值进行采样，这几个片段便得到的是同一个阴影，这就会产生锯齿边
+	// 一个简单的PCF的实现是简单的从纹理像素四周对深度贴图采样，然后把结果平均起来：
+	float shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(u_ShadowMap, 0);
+	for (int x = -1; x <= 1; ++x)
+	{
+		for (int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(u_ShadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+			shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+		}
+	}
+
+	shadow /= 9.0;
+
+	// 当处于光锥的远平面区域之外时，将阴影保持在 0.0。
+	if (projCoords.z > 1.0)
+	{
+		shadow = 0.0;
+	}
 
 	return shadow;
 
