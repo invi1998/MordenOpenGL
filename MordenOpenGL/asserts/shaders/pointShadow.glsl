@@ -33,6 +33,33 @@ void main()
 	vs_out.TexCoords = a_TexCoords;
 }
 
+// 几何着色器
+#type geometry
+#version 330 core
+
+layout (triangles) in;
+layout (triangle_strip, max_vertices = 18) out;
+
+uniform mat4 shadowMatrices[6];
+
+out vec4 FragPos;	// 从几何着色器中获取的 FragPos（每个 EmitVertex 输出）
+
+void main()
+{
+	for (int face = 0; face < 6; ++face)
+	{
+		gl_Layer = face;	// 内置变量，指定我们要渲染到哪个面。
+		for (int i = 0;  i < 3;  ++i)
+		{
+			FragPos = gl_in[i].gl_Position;
+			gl_Position = shadowMatrices[face] * FragPos;
+			EmitVertex();
+		}
+		EndPrimitive();
+	}
+}
+
+
 // 片段着色器
 #type fragment
 #version 330 core

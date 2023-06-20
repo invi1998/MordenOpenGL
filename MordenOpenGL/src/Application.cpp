@@ -181,16 +181,22 @@ int main(void)
 	// 将立方体贴图作为深度图 FBO 的颜色缓冲区附加
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubeMap, 0);
-	glDrawArrays(GL_NONE);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Framebuffer not complete!" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// shadowMappingShader.Use();
 	// shadowMappingShader.SetInt("u_DiffuseTexture", 0);
 	// shadowMappingShader.SetInt("u_ShadowMap", 1);
-	debugDepthShader.Use();
-	debugDepthShader.SetInt("u_DepthMap", 0);
+	// debugDepthShader.Use();
+	// debugDepthShader.SetInt("u_DepthMap", 0);
 
 	// glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
-	glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
+	// glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
 
 	// 渲染循环
 	while(!glfwWindowShouldClose(window))
@@ -211,49 +217,30 @@ int main(void)
 
 		while (glGetError() != GL_NO_ERROR);  // 清空错误消息队列
 
-		// 1:将场景深度渲染到纹理中（从光的视角）
-		glm::mat4 lightProjection, lightView;
-		glm::mat4 lightSpaceMatrix;
-		float near_plane = 1.0f, far_plane = 7.5f;
-		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-		lightView = glm::lookAt(lightPos, glm::vec3{ 0.0f }, glm::vec3{ 0.0f, 2.0f, 0.0f });
-		lightSpaceMatrix = lightProjection * lightView;
-		// 从光源的视角渲染场景。
-		// simpleDepthShader.Use();
-		// simpleDepthShader.SetMat4("u_LightSpaceMatrix", lightSpaceMatrix);
+		// 0. 创建深度立方体贴图变换矩阵
+		GLfloat aspect = static_cast<GLfloat>(SHADOW_WIDTH) / static_cast<GLfloat>(SHADOW_HEIGHT);
+		GLfloat near_ = 1.0f;
+		GLfloat far_ = 25.0f;
+		glm::mat4 shadowProj = glm::perspective(90.f, aspect, near_, far_);
+		std::vector<glm::mat4> shadowTransforms;
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
+		shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 
+		// 1. 渲染场景到深度立方体贴图中
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
-		glActiveTexture(GL_TEXTURE0);
-		woodTexture.Bind(GL_TEXTURE_2D);
-		renderScene(simpleDepthShader);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		pointShadowShader.Use();
+		for (GLuint i = 0; i < 6; ++i)
+		{
+			pointShadowShader.SetMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+		}
 
-		// 重置视口大小
-		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		shadowMappingShader.Use();
-		shadowMappingShader.SetMat4("u_Projection", camera.GetProjection());
-		shadowMappingShader.SetMat4("u_View", camera.GetViewMatrix());
-		shadowMappingShader.SetMat4("u_LightSpaceMatrix", lightSpaceMatrix);
-		shadowMappingShader.SetVec3("u_LightPos", lightPos);
-		shadowMappingShader.SetVec3("u_ViewPos", camera.GetPosition());
-
-		glActiveTexture(GL_TEXTURE0);
-		woodTexture.Bind(GL_TEXTURE_2D);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		renderScene(shadowMappingShader);
-
-		//// 将深度图渲染到四边形上，用于可视化调试
-		//debugDepthShader.Use();
-		//debugDepthShader.SetFloat("u_NearPlane", near_plane);
-		//debugDepthShader.SetFloat("u_FarPlane", far_plane);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, depthMap);
-		//renderQuad();
+		pointShadowShader.SetInt()
 
 		
 		// 检查并调用事件，交换缓冲
