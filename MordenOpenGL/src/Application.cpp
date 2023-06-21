@@ -38,6 +38,9 @@ bool firstMouse = true;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 
+// Options
+GLboolean shadows = true;
+
 // 窗口大小调整时的回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -108,6 +111,7 @@ int main(void)
 	Shader debugDepthShader("asserts/shaders/debugQuad.glsl");
 	// Shader shadowMappingShader("asserts/shaders/shadowMapping.glsl");
 	Shader pointShadowShader("asserts/shaders/pointShadow.glsl");
+	Shader pointShadowDepthShader("asserts/shaders/pointShadowDepth.glsl");
 
 	Texture woodTexture("asserts/textures/wood.png", TEXTURE_TYPE::DIFFUSE);
 	Texture planeTexture("asserts/textures/R-C.jpg", TEXTURE_TYPE::DIFFUSE);
@@ -185,7 +189,7 @@ int main(void)
 	glReadBuffer(GL_NONE);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		std::cout << "Framebuffer not complete!" << std::endl;
+		std::cout << "FrameBuffer not complete!" << std::endl;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -240,8 +244,29 @@ int main(void)
 			pointShadowShader.SetMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
 		}
 
-		pointShadowShader.SetInt()
+		pointShadowShader.SetFloat("farPlane", far_);
+		pointShadowShader.SetVec3("u_LightPos", lightPos);
+		renderScene(pointShadowShader);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+		// 2：正常渲染场景
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		pointShadowDepthShader.Use();
+		pointShadowDepthShader.SetMat4("u_Projection", camera.GetProjection());
+		pointShadowDepthShader.SetMat4("u_View", camera.GetViewMatrix());
+		// 设置light uniform
+		pointShadowDepthShader.SetVec3("u_LightPos", lightPos);
+		pointShadowDepthShader.SetVec3("u_ViewPos", camera.GetPosition());
+		// 通过按下“空格”键启用/禁用阴影。
+		pointShadowDepthShader.SetBool("shadows", shadows);
+		pointShadowDepthShader.SetFloat("farPlane", far_);
+		glActiveTexture(GL_TEXTURE0);
+		woodTexture.Bind(GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubeMap);
+		renderScene(pointShadowDepthShader);
+		
 		
 		// 检查并调用事件，交换缓冲
 		// glfw：交换缓冲区和轮询 IO 事件（按下/释放键、移动鼠标等）
@@ -414,6 +439,10 @@ void processInput(GLFWwindow* window)
 		if (glfwGetKey(window, GLFW_KEY_B) == GLFW_RELEASE)
 		{
 			blinnKeyPressed = false;
+		}
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		{
+			shadows = !shadows;
 		}
 	}
 }

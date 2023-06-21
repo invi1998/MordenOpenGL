@@ -13,7 +13,7 @@ public:
 
 	void Use();
 
-
+	void SetBool(const std::string& name, bool value);
 	void SetFloat(const std::string& name, float value);
 	void SetInt(const std::string& name, int value);
 	void SetIntArray(const std::string& name, int* values, uint32_t count);
