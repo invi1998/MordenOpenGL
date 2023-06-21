@@ -56,18 +56,38 @@ float ShadowCalculation(vec3 fragPos)
 	// 获取片段位置与光源位置之间的向量。
 	vec3 fragToLight = fragPos - u_LightPos;
 
-	// 使用从光源到片段的向量从深度图中进行采样。
-	float closetDepth = texture(u_DepthMap, fragToLight).r;
-
-	// 深度值目前处于 [0, 1] 的线性范围内。将其重新转换回原始深度值。
-	closetDepth *= farPlane;
-
+//	// 使用从光源到片段的向量从深度图中进行采样。
+//	float closetDepth = texture(u_DepthMap, fragToLight).r;
+//
+//	// 深度值目前处于 [0, 1] 的线性范围内。将其重新转换回原始深度值。
+//	closetDepth *= farPlane;
+//
 	// 现在，将当前的线性深度作为片段到光源位置的长度。
 	float currentDepth = length(fragToLight);
 
-	// 现在进行阴影测试。
-	float bias = 0.05;
-	float shadow = currentDepth - bias > closetDepth ? 1.0 : 0.0;
+//	// 现在进行阴影测试。
+//	float bias = 0.05;
+//	float shadow = currentDepth - bias > closetDepth ? 1.0 : 0.0;
+
+	// PCF
+	float shadow = 0.0;
+	float bias = 0.05; 
+	float samples = 4.0;
+	float offset = 0.1;
+	for(float x = -offset; x < offset; x += offset / (samples * 0.5))
+	{
+		for(float y = -offset; y < offset; y += offset / (samples * 0.5))
+		{
+			for(float z = -offset; z < offset; z += offset / (samples * 0.5))
+			{
+				float closestDepth = texture(u_DepthMap, fragToLight + vec3(x, y, z)).r; 
+				closestDepth *= farPlane;   // Undo mapping [0;1]
+				if(currentDepth - bias > closestDepth)
+					shadow += 1.0;
+			}
+		}
+	}
+	shadow /= (samples * samples * samples);
 
 	return shadow;
 
